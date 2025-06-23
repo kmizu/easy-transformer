@@ -1,0 +1,2747 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="プログラミング言語実装者のためのTransformer解説と実装">
+      
+      
+        <meta name="author" content="Your Name">
+      
+      
+        <link rel="canonical" href="https://yourusername.github.io/easy-transformer/part5/pretraining-finetuning/">
+      
+      
+        <link rel="prev" href="../gpt-architecture/">
+      
+      
+        <link rel="next" href="../tokenizer-details/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>事前学習とファインチューニング - Transformerを一から理解する</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../.." title="Transformerを一から理解する" class="md-header__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Transformerを一から理解する
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              事前学習とファインチューニング
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part1/why-transformer/" class="md-tabs__link">
+          
+  
+  第1部 導入と基礎概念
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part2/tokenization/" class="md-tabs__link">
+          
+  
+  第2部 Transformerへの道のり
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part3/multi-head-attention/" class="md-tabs__link">
+          
+  
+  第3部 Transformerアーキテクチャ詳解
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part4/minimal-transformer/" class="md-tabs__link">
+          
+  
+  第4部 実装編
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../gpt-architecture/" class="md-tabs__link">
+          
+  
+  第5部 LLMへの拡張
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../exercises/part1-exercises/" class="md-tabs__link">
+          
+  
+  演習問題
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../advanced/optimization/" class="md-tabs__link">
+          
+  
+  発展的なトピック
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../appendix/glossary/" class="md-tabs__link">
+          
+  
+  付録
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Transformerを一から理解する" class="md-nav__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Transformerを一から理解する
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ホーム
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第1部 導入と基礎概念
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            第1部 導入と基礎概念
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/why-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    なぜTransformerが重要なのか
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/similarities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    プログラミング言語処理との類似点
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/math-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    必要な数学的基礎
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/pytorch-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyTorchの最小限の使い方
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第2部 Transformerへの道のり
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            第2部 Transformerへの道のり
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/tokenization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    単語の数値表現
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/attention-intuition/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    注意機構の直感的理解
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/positional-encoding/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    位置エンコーディング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/layers-and-deep-learning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    層の概念と深層学習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第3部 Transformerアーキテクチャ詳解
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            第3部 Transformerアーキテクチャ詳解
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/multi-head-attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-Head Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/feed-forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feed Forward Network
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/residual-normalization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    残差接続と層正規化
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/encoder-decoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    エンコーダとデコーダ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第4部 実装編
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            第4部 実装編
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/minimal-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最小限のTransformer実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/component-implementation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    各コンポーネントの実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/debugging-visualization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    デバッグとビジュアライゼーション
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/validation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    動作確認
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    第5部 LLMへの拡張
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            第5部 LLMへの拡張
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gpt-architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GPTアーキテクチャ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    事前学習とファインチューニング
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    事前学習とファインチューニング
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      はじめに：知識の転移
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 事前学習の仕組み
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18.1 事前学習の仕組み">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      自己教師あり学習の威力
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 ファインチューニング戦略
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 実践的なファインチューニング
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18.3 実践的なファインチューニング">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Input:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#184" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.4 効率的な学習手法
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tokenizer-details/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    トークナイザーの詳細
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-techniques/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    推論時の工夫
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    演習問題
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            演習問題
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part1-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第1部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part2-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第2部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part3-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第3部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part4-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第4部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part5-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第5部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    発展的なトピック
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            発展的なトピック
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/optimization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最適化技術
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/multimodal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    マルチモーダル
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    付録
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            付録
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用語集
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    参考資料
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">事前学習とファインチューニング<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">はじめに：知識の転移<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>コンパイラ開発で、既存のパーサージェネレータやライブラリを活用することを考えてください。ゼロから作るのではなく、汎用的な基盤の上に特定の言語仕様を実装します。深層学習における事前学習とファインチューニングも同じ考え方です。</p>
+<p>大規模な汎用コーパスで基礎的な言語理解を学習し（事前学習）、その後特定のタスクに適応させる（ファインチューニング）。この二段階のアプローチが、現代のNLPの成功の鍵となっています。</p>
+<h2 id="181">18.1 事前学習の仕組み<a class="headerlink" href="#181" title="Permanent link">&para;</a></h2>
+<h3 id="_3">自己教師あり学習の威力<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from typing import List, Dict, Tuple, Optional, Any
+from dataclasses import dataclass
+import random
+from torch.utils.data import Dataset, DataLoader
+from collections import defaultdict
+import time
+from tqdm import tqdm</p>
+<p>class PretrainingObjectives:
+    """事前学習の目的関数"""</p>
+<div class="highlight"><pre><span></span><code>def explain_objectives(self):
+    &quot;&quot;&quot;主要な事前学習目的を説明&quot;&quot;&quot;
+    print(&quot;=== 事前学習の目的関数 ===\n&quot;)
+
+    objectives = {
+        &quot;Causal Language Modeling (CLM)&quot;: {
+            &quot;説明&quot;: &quot;次のトークンを予測（GPT系）&quot;,
+            &quot;例&quot;: &quot;The cat sat on the [PREDICT]&quot;,
+            &quot;利点&quot;: &quot;自然な生成能力&quot;,
+            &quot;欠点&quot;: &quot;単方向の文脈のみ&quot;
+        },
+
+        &quot;Masked Language Modeling (MLM)&quot;: {
+            &quot;説明&quot;: &quot;マスクされたトークンを予測（BERT系）&quot;,
+            &quot;例&quot;: &quot;The [MASK] sat on the mat&quot;,
+            &quot;利点&quot;: &quot;双方向の文脈を活用&quot;,
+            &quot;欠点&quot;: &quot;生成タスクに不向き&quot;
+        },
+
+        &quot;Permutation Language Modeling&quot;: {
+            &quot;説明&quot;: &quot;ランダムな順序で予測（XLNet）&quot;,
+            &quot;例&quot;: &quot;順列: [2,4,1,3] で予測&quot;,
+            &quot;利点&quot;: &quot;双方向性と自己回帰の両立&quot;,
+            &quot;欠点&quot;: &quot;実装が複雑&quot;
+        },
+
+        &quot;Denoising Objectives&quot;: {
+            &quot;説明&quot;: &quot;破損したテキストを復元（T5, BART）&quot;,
+            &quot;例&quot;: &quot;The &lt;X&gt; on &lt;Y&gt; mat → The cat sat on the mat&quot;,
+            &quot;利点&quot;: &quot;柔軟な事前学習&quot;,
+            &quot;欠点&quot;: &quot;計算コストが高い&quot;
+        }
+    }
+
+    for name, details in objectives.items():
+        print(f&quot;{name}:&quot;)
+        for key, value in details.items():
+            print(f&quot;  {key}: {value}&quot;)
+        print()
+
+    # 可視化
+    self._visualize_objectives()
+
+def _visualize_objectives(self):
+    &quot;&quot;&quot;目的関数を可視化&quot;&quot;&quot;
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+    # 1. Causal LM
+    ax = axes[0, 0]
+    tokens = [&quot;The&quot;, &quot;cat&quot;, &quot;sat&quot;, &quot;on&quot;, &quot;the&quot;, &quot;mat&quot;]
+    positions = range(len(tokens))
+
+    # トークンを表示
+    for i, token in enumerate(tokens):
+        rect = plt.Rectangle((i, 0), 1, 1, facecolor=&#39;lightblue&#39;, 
+                           edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(i+0.5, 0.5, token, ha=&#39;center&#39;, va=&#39;center&#39;)
+
+    # 予測の矢印
+    for i in range(len(tokens)-1):
+        ax.arrow(i+0.5, 1.2, 0.5, 0, head_width=0.1, 
+                head_length=0.1, fc=&#39;red&#39;, ec=&#39;red&#39;)
+        ax.text(i+1, 1.5, &quot;→&quot;, ha=&#39;center&#39;, color=&#39;red&#39;)
+
+    ax.set_xlim(-0.5, len(tokens))
+    ax.set_ylim(-0.5, 2)
+    ax.set_title(&#39;Causal Language Modeling&#39;, fontsize=12)
+    ax.axis(&#39;off&#39;)
+
+    # 2. Masked LM
+    ax = axes[0, 1]
+    masked_tokens = [&quot;The&quot;, &quot;[MASK]&quot;, &quot;sat&quot;, &quot;on&quot;, &quot;[MASK]&quot;, &quot;mat&quot;]
+
+    for i, token in enumerate(masked_tokens):
+        if token == &quot;[MASK]&quot;:
+            color = &#39;lightcoral&#39;
+        else:
+            color = &#39;lightblue&#39;
+        rect = plt.Rectangle((i, 0), 1, 1, facecolor=color,
+                           edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(i+0.5, 0.5, token, ha=&#39;center&#39;, va=&#39;center&#39;,
+               fontsize=8 if token == &quot;[MASK]&quot; else 10)
+
+    # 双方向の矢印
+    for mask_pos in [1, 4]:
+        for j in range(len(masked_tokens)):
+            if j != mask_pos:
+                ax.arrow(j+0.5, -0.3, 
+                        (mask_pos-j)*0.8, 0, 
+                        head_width=0.05, head_length=0.05,
+                        fc=&#39;blue&#39;, ec=&#39;blue&#39;, alpha=0.3)
+
+    ax.set_xlim(-0.5, len(masked_tokens))
+    ax.set_ylim(-0.5, 1.5)
+    ax.set_title(&#39;Masked Language Modeling&#39;, fontsize=12)
+    ax.axis(&#39;off&#39;)
+
+    # 3. Permutation LM
+    ax = axes[1, 0]
+    perm_order = [2, 0, 3, 1, 4]  # 例
+    perm_tokens = [&quot;The&quot;, &quot;cat&quot;, &quot;sat&quot;, &quot;on&quot;, &quot;mat&quot;]
+
+    # 元の順序
+    for i, token in enumerate(perm_tokens):
+        rect = plt.Rectangle((i, 1), 1, 0.5, facecolor=&#39;lightgreen&#39;,
+                           edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(i+0.5, 1.25, token, ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=9)
+
+    # 予測順序
+    for pred_idx, orig_idx in enumerate(perm_order):
+        rect = plt.Rectangle((pred_idx, 0), 1, 0.5, facecolor=&#39;lightyellow&#39;,
+                           edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(pred_idx+0.5, 0.25, perm_tokens[orig_idx], 
+               ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=9)
+
+        # 矢印
+        ax.arrow(orig_idx+0.5, 0.9, 
+                (pred_idx-orig_idx)*0.9, -0.35,
+                head_width=0.05, head_length=0.05,
+                fc=&#39;purple&#39;, ec=&#39;purple&#39;, alpha=0.5)
+
+    ax.set_xlim(-0.5, len(perm_tokens))
+    ax.set_ylim(-0.2, 2)
+    ax.set_title(&#39;Permutation Language Modeling&#39;, fontsize=12)
+    ax.text(2.5, -0.1, &#39;Prediction Order&#39;, ha=&#39;center&#39;, fontsize=8)
+    ax.text(2.5, 1.7, &#39;Original Order&#39;, ha=&#39;center&#39;, fontsize=8)
+    ax.axis(&#39;off&#39;)
+
+    # 4. Denoising
+    ax = axes[1, 1]
+    corrupted = [&quot;The&quot;, &quot;&lt;X&gt;&quot;, &quot;on&quot;, &quot;&lt;Y&gt;&quot;]
+    original = [&quot;The&quot;, &quot;cat sat&quot;, &quot;on&quot;, &quot;the mat&quot;]
+
+    # 破損版
+    x_pos = 0
+    for token in corrupted:
+        width = 2 if token in [&quot;&lt;X&gt;&quot;, &quot;&lt;Y&gt;&quot;] else 1
+        rect = plt.Rectangle((x_pos, 1), width, 0.5, 
+                           facecolor=&#39;lightcoral&#39; if &quot;&lt;&quot; in token else &#39;lightblue&#39;,
+                           edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(x_pos+width/2, 1.25, token, ha=&#39;center&#39;, va=&#39;center&#39;)
+        x_pos += width
+
+    # 矢印
+    ax.arrow(3, 0.9, 0, -0.3, head_width=0.3, head_length=0.1,
+            fc=&#39;green&#39;, ec=&#39;green&#39;, linewidth=2)
+
+    # 復元版
+    x_pos = 0
+    for token in original:
+        width = len(token.split()) * 0.8
+        rect = plt.Rectangle((x_pos, 0), width, 0.5,
+                           facecolor=&#39;lightgreen&#39;, edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(x_pos+width/2, 0.25, token, ha=&#39;center&#39;, va=&#39;center&#39;,
+               fontsize=8)
+        x_pos += width
+
+    ax.set_xlim(-0.5, 6)
+    ax.set_ylim(-0.2, 2)
+    ax.set_title(&#39;Denoising Objective&#39;, fontsize=12)
+    ax.text(3, 0.65, &#39;Reconstruct&#39;, ha=&#39;center&#39;, fontsize=8, color=&#39;green&#39;)
+    ax.axis(&#39;off&#39;)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<p>class PretrainingDataset(Dataset):
+    """事前学習用データセット"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, texts: List[str], tokenizer, max_length: int = 512,
+             objective: str = &quot;clm&quot;):
+    self.texts = texts
+    self.tokenizer = tokenizer
+    self.max_length = max_length
+    self.objective = objective
+
+def __len__(self):
+    return len(self.texts)
+
+def __getitem__(self, idx):
+    text = self.texts[idx]
+
+    # トークン化
+    tokens = self.tokenizer.encode(text, max_length=self.max_length,
+                                 truncation=True)
+
+    if self.objective == &quot;clm&quot;:
+        # Causal LM: inputとlabelは同じ（シフトは後で）
+        return {
+            &quot;input_ids&quot;: torch.tensor(tokens),
+            &quot;labels&quot;: torch.tensor(tokens)
+        }
+
+    elif self.objective == &quot;mlm&quot;:
+        # Masked LM
+        masked_tokens, labels = self._mask_tokens(tokens)
+        return {
+            &quot;input_ids&quot;: torch.tensor(masked_tokens),
+            &quot;labels&quot;: torch.tensor(labels)
+        }
+
+    elif self.objective == &quot;denoising&quot;:
+        # Denoising
+        corrupted, original = self._corrupt_tokens(tokens)
+        return {
+            &quot;input_ids&quot;: torch.tensor(corrupted),
+            &quot;labels&quot;: torch.tensor(original)
+        }
+
+def _mask_tokens(self, tokens: List[int], mask_prob: float = 0.15):
+    &quot;&quot;&quot;トークンをマスク&quot;&quot;&quot;
+    masked_tokens = tokens.copy()
+    labels = [-100] * len(tokens)  # -100 = ignore in loss
+
+    # マスク位置をランダムに選択
+    mask_indices = np.random.binomial(1, mask_prob, size=len(tokens)).astype(bool)
+
+    for i, mask in enumerate(mask_indices):
+        if mask:
+            labels[i] = tokens[i]
+
+            # 80%: [MASK]トークンに置換
+            if random.random() &lt; 0.8:
+                masked_tokens[i] = self.tokenizer.mask_token_id
+            # 10%: ランダムなトークンに置換
+            elif random.random() &lt; 0.5:
+                masked_tokens[i] = random.randint(0, len(self.tokenizer) - 1)
+            # 10%: そのまま
+
+    return masked_tokens, labels
+
+def _corrupt_tokens(self, tokens: List[int]):
+    &quot;&quot;&quot;トークンを破損させる（T5スタイル）&quot;&quot;&quot;
+    # 簡略版：連続するトークンをマスク
+    corrupted = []
+    original = tokens.copy()
+
+    i = 0
+    while i &lt; len(tokens):
+        if random.random() &lt; 0.15:  # 15%の確率でスパンをマスク
+            span_length = np.random.poisson(3)  # 平均長3
+            span_length = min(span_length, len(tokens) - i)
+
+            # スパンを特殊トークンで置換
+            corrupted.append(self.tokenizer.mask_token_id)
+            i += span_length
+        else:
+            corrupted.append(tokens[i])
+            i += 1
+
+    return corrupted, original
+</code></pre></div>
+<p>class PretrainingPipeline:
+    """事前学習パイプライン"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, model: nn.Module, config: Dict[str, Any]):
+    self.model = model
+    self.config = config
+    self.device = torch.device(&#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;)
+    self.model.to(self.device)
+
+    # 最適化
+    self.optimizer = self._create_optimizer()
+    self.scheduler = self._create_scheduler()
+
+    # 統計
+    self.stats = defaultdict(list)
+
+def _create_optimizer(self):
+    &quot;&quot;&quot;オプティマイザーの作成&quot;&quot;&quot;
+    # Weight decayを適用するパラメータとしないパラメータを分離
+    decay_params = []
+    no_decay_params = []
+
+    for name, param in self.model.named_parameters():
+        if &quot;bias&quot; in name or &quot;norm&quot; in name or &quot;embedding&quot; in name:
+            no_decay_params.append(param)
+        else:
+            decay_params.append(param)
+
+    optimizer_grouped_parameters = [
+        {&quot;params&quot;: decay_params, &quot;weight_decay&quot;: self.config[&quot;weight_decay&quot;]},
+        {&quot;params&quot;: no_decay_params, &quot;weight_decay&quot;: 0.0}
+    ]
+
+    return torch.optim.AdamW(
+        optimizer_grouped_parameters,
+        lr=self.config[&quot;learning_rate&quot;],
+        betas=(0.9, 0.999),
+        eps=1e-8
+    )
+
+def _create_scheduler(self):
+    &quot;&quot;&quot;学習率スケジューラーの作成&quot;&quot;&quot;
+    # Linear warmup + Cosine decay
+    def lr_lambda(step):
+        if step &lt; self.config[&quot;warmup_steps&quot;]:
+            return step / self.config[&quot;warmup_steps&quot;]
+        else:
+            progress = (step - self.config[&quot;warmup_steps&quot;]) / \
+                      (self.config[&quot;total_steps&quot;] - self.config[&quot;warmup_steps&quot;])
+            return 0.5 * (1 + np.cos(np.pi * progress))
+
+    return torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
+
+def train(self, train_dataloader: DataLoader, 
+          val_dataloader: Optional[DataLoader] = None):
+    &quot;&quot;&quot;事前学習の実行&quot;&quot;&quot;
+    print(&quot;=== 事前学習開始 ===\n&quot;)
+
+    global_step = 0
+    best_val_loss = float(&#39;inf&#39;)
+
+    for epoch in range(self.config[&quot;num_epochs&quot;]):
+        print(f&quot;\nEpoch {epoch + 1}/{self.config[&#39;num_epochs&#39;]}&quot;)
+
+        # 訓練
+        train_loss = self._train_epoch(train_dataloader, global_step)
+        self.stats[&quot;train_loss&quot;].append(train_loss)
+
+        # 検証
+        if val_dataloader is not None:
+            val_loss = self._validate(val_dataloader)
+            self.stats[&quot;val_loss&quot;].append(val_loss)
+
+            print(f&quot;Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}&quot;)
+
+            # チェックポイント保存
+            if val_loss &lt; best_val_loss:
+                best_val_loss = val_loss
+                self._save_checkpoint(epoch, val_loss)
+        else:
+            print(f&quot;Train Loss: {train_loss:.4f}&quot;)
+
+        global_step += len(train_dataloader)
+
+    # 学習曲線のプロット
+    self._plot_training_curves()
+
+def _train_epoch(self, dataloader: DataLoader, global_step: int):
+    &quot;&quot;&quot;1エポックの訓練&quot;&quot;&quot;
+    self.model.train()
+    total_loss = 0
+
+    progress_bar = tqdm(dataloader, desc=&quot;Training&quot;)
+    for batch in progress_bar:
+        # デバイスに転送
+        input_ids = batch[&quot;input_ids&quot;].to(self.device)
+        labels = batch[&quot;labels&quot;].to(self.device)
+
+        # 順伝播
+        outputs = self.model(input_ids, labels=labels)
+        loss = outputs[&quot;loss&quot;] if isinstance(outputs, dict) else outputs[0]
+
+        # 逆伝播
+        loss.backward()
+
+        # 勾配クリッピング
+        torch.nn.utils.clip_grad_norm_(
+            self.model.parameters(), 
+            self.config[&quot;max_grad_norm&quot;]
+        )
+
+        # 最適化ステップ
+        self.optimizer.step()
+        self.scheduler.step()
+        self.optimizer.zero_grad()
+
+        # 統計更新
+        total_loss += loss.item()
+
+        # 進捗表示
+        progress_bar.set_postfix({
+            &quot;loss&quot;: loss.item(),
+            &quot;lr&quot;: self.optimizer.param_groups[0][&quot;lr&quot;]
+        })
+
+        # 定期的なログ
+        if (global_step + 1) % self.config[&quot;log_interval&quot;] == 0:
+            self.stats[&quot;step_loss&quot;].append(loss.item())
+            self.stats[&quot;learning_rate&quot;].append(
+                self.optimizer.param_groups[0][&quot;lr&quot;]
+            )
+
+        global_step += 1
+
+    return total_loss / len(dataloader)
+
+def _validate(self, dataloader: DataLoader):
+    &quot;&quot;&quot;検証&quot;&quot;&quot;
+    self.model.eval()
+    total_loss = 0
+
+    with torch.no_grad():
+        for batch in tqdm(dataloader, desc=&quot;Validation&quot;):
+            input_ids = batch[&quot;input_ids&quot;].to(self.device)
+            labels = batch[&quot;labels&quot;].to(self.device)
+
+            outputs = self.model(input_ids, labels=labels)
+            loss = outputs[&quot;loss&quot;] if isinstance(outputs, dict) else outputs[0]
+
+            total_loss += loss.item()
+
+    return total_loss / len(dataloader)
+
+def _save_checkpoint(self, epoch: int, val_loss: float):
+    &quot;&quot;&quot;チェックポイントの保存&quot;&quot;&quot;
+    checkpoint = {
+        &quot;epoch&quot;: epoch,
+        &quot;model_state_dict&quot;: self.model.state_dict(),
+        &quot;optimizer_state_dict&quot;: self.optimizer.state_dict(),
+        &quot;scheduler_state_dict&quot;: self.scheduler.state_dict(),
+        &quot;val_loss&quot;: val_loss,
+        &quot;config&quot;: self.config
+    }
+
+    torch.save(checkpoint, f&quot;checkpoint_epoch_{epoch}.pt&quot;)
+    print(f&quot;Checkpoint saved: checkpoint_epoch_{epoch}.pt&quot;)
+
+def _plot_training_curves(self):
+    &quot;&quot;&quot;学習曲線のプロット&quot;&quot;&quot;
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+    # 損失
+    epochs = range(1, len(self.stats[&quot;train_loss&quot;]) + 1)
+    ax1.plot(epochs, self.stats[&quot;train_loss&quot;], &#39;b-&#39;, label=&#39;Train Loss&#39;)
+    if self.stats[&quot;val_loss&quot;]:
+        ax1.plot(epochs, self.stats[&quot;val_loss&quot;], &#39;r-&#39;, label=&#39;Val Loss&#39;)
+    ax1.set_xlabel(&#39;Epoch&#39;)
+    ax1.set_ylabel(&#39;Loss&#39;)
+    ax1.set_title(&#39;Training and Validation Loss&#39;)
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # 学習率
+    if self.stats[&quot;learning_rate&quot;]:
+        steps = range(len(self.stats[&quot;learning_rate&quot;]))
+        ax2.plot(steps, self.stats[&quot;learning_rate&quot;], &#39;g-&#39;)
+        ax2.set_xlabel(&#39;Step&#39;)
+        ax2.set_ylabel(&#39;Learning Rate&#39;)
+        ax2.set_title(&#39;Learning Rate Schedule&#39;)
+        ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<h2 id="182">18.2 ファインチューニング戦略<a class="headerlink" href="#182" title="Permanent link">&para;</a></h2>
+<p>class FineTuningStrategies:
+    """ファインチューニング戦略"""</p>
+<div class="highlight"><pre><span></span><code>def explain_strategies(self):
+    &quot;&quot;&quot;主要な戦略を説明&quot;&quot;&quot;
+    print(&quot;=== ファインチューニング戦略 ===\n&quot;)
+
+    strategies = {
+        &quot;Full Fine-tuning&quot;: {
+            &quot;説明&quot;: &quot;全パラメータを更新&quot;,
+            &quot;利点&quot;: &quot;最大の表現力&quot;,
+            &quot;欠点&quot;: &quot;計算コストが高い、過学習のリスク&quot;,
+            &quot;パラメータ数&quot;: &quot;100%&quot;
+        },
+
+        &quot;LoRA (Low-Rank Adaptation)&quot;: {
+            &quot;説明&quot;: &quot;低ランク行列での適応&quot;,
+            &quot;利点&quot;: &quot;パラメータ効率的、複数タスクの同時対応&quot;,
+            &quot;欠点&quot;: &quot;若干の性能低下の可能性&quot;,
+            &quot;パラメータ数&quot;: &quot;~0.1%&quot;
+        },
+
+        &quot;Prefix Tuning&quot;: {
+            &quot;説明&quot;: &quot;プレフィックスベクトルの学習&quot;,
+            &quot;利点&quot;: &quot;元のモデルを変更しない&quot;,
+            &quot;欠点&quot;: &quot;長いプレフィックスが必要&quot;,
+            &quot;パラメータ数&quot;: &quot;~0.1%&quot;
+        },
+
+        &quot;Adapter Layers&quot;: {
+            &quot;説明&quot;: &quot;小さなアダプター層を挿入&quot;,
+            &quot;利点&quot;: &quot;モジュラー、タスク特化&quot;,
+            &quot;欠点&quot;: &quot;推論時のオーバーヘッド&quot;,
+            &quot;パラメータ数&quot;: &quot;~1-5%&quot;
+        },
+
+        &quot;BitFit&quot;: {
+            &quot;説明&quot;: &quot;バイアス項のみを更新&quot;,
+            &quot;利点&quot;: &quot;極めてパラメータ効率的&quot;,
+            &quot;欠点&quot;: &quot;表現力が限定的&quot;,
+            &quot;パラメータ数&quot;: &quot;~0.05%&quot;
+        }
+    }
+
+    # 比較表示
+    self._visualize_strategies(strategies)
+
+    # 実装例
+    self._implement_lora()
+
+def _visualize_strategies(self, strategies: Dict[str, Dict[str, str]]):
+    &quot;&quot;&quot;戦略を可視化&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 8))
+
+    # データ準備
+    names = list(strategies.keys())
+    param_percentages = []
+
+    for name, info in strategies.items():
+        # パーセンテージを抽出
+        param_str = info[&quot;パラメータ数&quot;]
+        if &quot;~&quot; in param_str:
+            param_str = param_str.replace(&quot;~&quot;, &quot;&quot;)
+        if &quot;-&quot; in param_str:
+            # 範囲の場合は平均を取る
+            parts = param_str.replace(&quot;%&quot;, &quot;&quot;).split(&quot;-&quot;)
+            param_percentages.append(np.mean([float(p) for p in parts]))
+        else:
+            param_percentages.append(float(param_str.replace(&quot;%&quot;, &quot;&quot;)))
+
+    # 棒グラフ
+    colors = plt.cm.viridis(np.linspace(0, 1, len(names)))
+    bars = ax.bar(names, param_percentages, color=colors)
+
+    # ログスケール
+    ax.set_yscale(&#39;log&#39;)
+    ax.set_ylabel(&#39;Trainable Parameters (%)&#39;, fontsize=12)
+    ax.set_title(&#39;Parameter Efficiency of Fine-tuning Strategies&#39;, fontsize=14)
+
+    # 値を表示
+    for bar, pct in zip(bars, param_percentages):
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2., height,
+               f&#39;{pct:.2f}%&#39;, ha=&#39;center&#39;, va=&#39;bottom&#39;)
+
+    # 回転
+    plt.xticks(rotation=45, ha=&#39;right&#39;)
+    plt.grid(True, alpha=0.3, axis=&#39;y&#39;)
+    plt.tight_layout()
+    plt.show()
+
+def _implement_lora(self):
+    &quot;&quot;&quot;LoRAの実装例&quot;&quot;&quot;
+    print(&quot;\n=== LoRA実装例 ===\n&quot;)
+
+    class LoRALayer(nn.Module):
+        &quot;&quot;&quot;LoRAレイヤー&quot;&quot;&quot;
+
+        def __init__(self, in_features: int, out_features: int, 
+                    rank: int = 16, alpha: float = 16.0):
+            super().__init__()
+            self.rank = rank
+            self.alpha = alpha
+            self.scaling = alpha / rank
+
+            # 低ランク行列
+            self.lora_A = nn.Parameter(torch.randn(in_features, rank))
+            self.lora_B = nn.Parameter(torch.zeros(rank, out_features))
+
+            # 初期化
+            nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
+
+        def forward(self, x: torch.Tensor, original_weight: torch.Tensor):
+            # 元の重み + LoRA
+            lora_weight = (self.lora_A @ self.lora_B) * self.scaling
+            return F.linear(x, original_weight + lora_weight.T)
+
+    print(&quot;LoRAの特徴:&quot;)
+    print(&quot;• W = W₀ + BA (低ランク分解)&quot;)
+    print(&quot;• rank &lt;&lt; min(in_features, out_features)&quot;)
+    print(&quot;• 推論時に重みをマージ可能&quot;)
+    print(&quot;• 複数のLoRAを切り替え可能&quot;)
+
+    # パラメータ削減の計算
+    in_features, out_features = 768, 768
+    rank = 16
+
+    original_params = in_features * out_features
+    lora_params = (in_features * rank) + (rank * out_features)
+    reduction = 100 * (1 - lora_params / original_params)
+
+    print(f&quot;\n例: {in_features}×{out_features}の行列&quot;)
+    print(f&quot;  元のパラメータ数: {original_params:,}&quot;)
+    print(f&quot;  LoRAパラメータ数: {lora_params:,}&quot;)
+    print(f&quot;  削減率: {reduction:.1f}%&quot;)
+</code></pre></div>
+<p>class TaskSpecificFineTuning:
+    """タスク特化のファインチューニング"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, base_model: nn.Module):
+    self.base_model = base_model
+
+def create_classification_head(self, num_classes: int):
+    &quot;&quot;&quot;分類ヘッドの作成&quot;&quot;&quot;
+
+    class ClassificationModel(nn.Module):
+        def __init__(self, base_model, num_classes, hidden_size=768):
+            super().__init__()
+            self.base_model = base_model
+            self.classifier = nn.Sequential(
+                nn.Dropout(0.1),
+                nn.Linear(hidden_size, hidden_size),
+                nn.Tanh(),
+                nn.Dropout(0.1),
+                nn.Linear(hidden_size, num_classes)
+            )
+
+        def forward(self, input_ids, attention_mask=None):
+            # ベースモデルの出力
+            outputs = self.base_model(input_ids, attention_mask=attention_mask)
+
+            # [CLS]トークンまたは平均プーリング
+            if hasattr(outputs, &#39;last_hidden_state&#39;):
+                hidden_states = outputs.last_hidden_state
+            else:
+                hidden_states = outputs
+
+            # プーリング（最初のトークン）
+            pooled_output = hidden_states[:, 0]
+
+            # 分類
+            logits = self.classifier(pooled_output)
+
+            return logits
+
+    return ClassificationModel(self.base_model, num_classes)
+
+def create_generation_head(self, max_length: int = 512):
+    &quot;&quot;&quot;生成ヘッドの作成&quot;&quot;&quot;
+
+    class GenerationModel(nn.Module):
+        def __init__(self, base_model, max_length):
+            super().__init__()
+            self.base_model = base_model
+            self.max_length = max_length
+
+        def forward(self, input_ids, labels=None):
+            outputs = self.base_model(input_ids, labels=labels)
+            return outputs
+
+        @torch.no_grad()
+        def generate(self, input_ids, max_new_tokens=50, **kwargs):
+            return self.base_model.generate(
+                input_ids, 
+                max_new_tokens=max_new_tokens,
+                **kwargs
+            )
+
+    return GenerationModel(self.base_model, max_length)
+</code></pre></div>
+<p>class FineTuningDataCollator:
+    """ファインチューニング用データコレーター"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, tokenizer, max_length: int = 512):
+    self.tokenizer = tokenizer
+    self.max_length = max_length
+
+def __call__(self, examples: List[Dict[str, Any]]) -&gt; Dict[str, torch.Tensor]:
+    &quot;&quot;&quot;バッチの作成&quot;&quot;&quot;
+    # タスクに応じた処理
+    if &quot;labels&quot; in examples[0]:
+        # 分類タスク
+        return self._collate_classification(examples)
+    elif &quot;target_text&quot; in examples[0]:
+        # 生成タスク
+        return self._collate_generation(examples)
+    else:
+        # デフォルト
+        return self._collate_default(examples)
+
+def _collate_classification(self, examples):
+    &quot;&quot;&quot;分類タスク用&quot;&quot;&quot;
+    texts = [ex[&quot;text&quot;] for ex in examples]
+    labels = [ex[&quot;labels&quot;] for ex in examples]
+
+    # トークン化
+    encoding = self.tokenizer(
+        texts,
+        truncation=True,
+        padding=True,
+        max_length=self.max_length,
+        return_tensors=&quot;pt&quot;
+    )
+
+    encoding[&quot;labels&quot;] = torch.tensor(labels)
+    return encoding
+
+def _collate_generation(self, examples):
+    &quot;&quot;&quot;生成タスク用&quot;&quot;&quot;
+    inputs = [ex[&quot;input_text&quot;] for ex in examples]
+    targets = [ex[&quot;target_text&quot;] for ex in examples]
+
+    # 入力と出力を結合
+    model_inputs = self.tokenizer(
+        inputs,
+        truncation=True,
+        padding=True,
+        max_length=self.max_length,
+        return_tensors=&quot;pt&quot;
+    )
+
+    # ラベルの準備
+    with self.tokenizer.as_target_tokenizer():
+        labels = self.tokenizer(
+            targets,
+            truncation=True,
+            padding=True,
+            max_length=self.max_length,
+            return_tensors=&quot;pt&quot;
+        )
+
+    model_inputs[&quot;labels&quot;] = labels[&quot;input_ids&quot;]
+    return model_inputs
+
+def _collate_default(self, examples):
+    &quot;&quot;&quot;デフォルト処理&quot;&quot;&quot;
+    return {key: torch.stack([ex[key] for ex in examples]) 
+            for key in examples[0].keys()}
+</code></pre></div>
+<h2 id="183">18.3 実践的なファインチューニング<a class="headerlink" href="#183" title="Permanent link">&para;</a></h2>
+<p>class PracticalFineTuning:
+    """実践的なファインチューニング例"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.device = torch.device(&#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;)
+
+def sentiment_analysis_example(self):
+    &quot;&quot;&quot;感情分析のファインチューニング例&quot;&quot;&quot;
+    print(&quot;=== 感情分析ファインチューニング ===\n&quot;)
+
+    # データセットの例
+    train_data = [
+        {&quot;text&quot;: &quot;This movie was fantastic!&quot;, &quot;label&quot;: 1},  # Positive
+        {&quot;text&quot;: &quot;Terrible experience, would not recommend.&quot;, &quot;label&quot;: 0},  # Negative
+        {&quot;text&quot;: &quot;The food was amazing and the service excellent.&quot;, &quot;label&quot;: 1},
+        {&quot;text&quot;: &quot;Waste of time and money.&quot;, &quot;label&quot;: 0},
+        {&quot;text&quot;: &quot;Best purchase I&#39;ve ever made!&quot;, &quot;label&quot;: 1},
+        {&quot;text&quot;: &quot;Completely disappointed with the quality.&quot;, &quot;label&quot;: 0}
+    ]
+
+    # データセットクラス
+    class SentimentDataset(Dataset):
+        def __init__(self, data, tokenizer, max_length=128):
+            self.data = data
+            self.tokenizer = tokenizer
+            self.max_length = max_length
+
+        def __len__(self):
+            return len(self.data)
+
+        def __getitem__(self, idx):
+            item = self.data[idx]
+            encoding = self.tokenizer(
+                item[&quot;text&quot;],
+                truncation=True,
+                padding=&quot;max_length&quot;,
+                max_length=self.max_length,
+                return_tensors=&quot;pt&quot;
+            )
+
+            return {
+                &quot;input_ids&quot;: encoding[&quot;input_ids&quot;].squeeze(),
+                &quot;attention_mask&quot;: encoding[&quot;attention_mask&quot;].squeeze(),
+                &quot;labels&quot;: torch.tensor(item[&quot;label&quot;])
+            }
+
+    print(&quot;データセット例:&quot;)
+    for item in train_data[:3]:
+        print(f&quot;  Text: &#39;{item[&#39;text&#39;]}&#39;&quot;)
+        print(f&quot;  Label: {item[&#39;label&#39;]} ({&#39;Positive&#39; if item[&#39;label&#39;] == 1 else &#39;Negative&#39;})\n&quot;)
+
+    # 学習設定
+    print(&quot;ファインチューニング設定:&quot;)
+    print(&quot;  Learning Rate: 2e-5&quot;)
+    print(&quot;  Batch Size: 16&quot;)
+    print(&quot;  Epochs: 3&quot;)
+    print(&quot;  Warmup Steps: 100&quot;)
+
+    # 結果の可視化
+    self._visualize_finetuning_results()
+
+def _visualize_finetuning_results(self):
+    &quot;&quot;&quot;ファインチューニング結果の可視化&quot;&quot;&quot;
+    # ダミーの学習曲線
+    epochs = np.arange(1, 4)
+    train_loss = [0.693, 0.245, 0.089]
+    val_loss = [0.672, 0.298, 0.156]
+    train_acc = [0.52, 0.91, 0.98]
+    val_acc = [0.55, 0.87, 0.92]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+    # 損失
+    ax1.plot(epochs, train_loss, &#39;b-o&#39;, label=&#39;Train Loss&#39;)
+    ax1.plot(epochs, val_loss, &#39;r-o&#39;, label=&#39;Val Loss&#39;)
+    ax1.set_xlabel(&#39;Epoch&#39;)
+    ax1.set_ylabel(&#39;Loss&#39;)
+    ax1.set_title(&#39;Training and Validation Loss&#39;)
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # 精度
+    ax2.plot(epochs, train_acc, &#39;b-o&#39;, label=&#39;Train Accuracy&#39;)
+    ax2.plot(epochs, val_acc, &#39;r-o&#39;, label=&#39;Val Accuracy&#39;)
+    ax2.set_xlabel(&#39;Epoch&#39;)
+    ax2.set_ylabel(&#39;Accuracy&#39;)
+    ax2.set_title(&#39;Training and Validation Accuracy&#39;)
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    ax2.set_ylim(0, 1)
+
+    plt.tight_layout()
+    plt.show()
+
+def instruction_tuning_example(self):
+    &quot;&quot;&quot;Instruction Tuningの例&quot;&quot;&quot;
+    print(&quot;\n=== Instruction Tuning ===\n&quot;)
+
+    instruction_examples = [
+        {
+            &quot;instruction&quot;: &quot;Translate the following English text to French:&quot;,
+            &quot;input&quot;: &quot;Hello, how are you today?&quot;,
+            &quot;output&quot;: &quot;Bonjour, comment allez-vous aujourd&#39;hui?&quot;
+        },
+        {
+            &quot;instruction&quot;: &quot;Summarize the following text in one sentence:&quot;,
+            &quot;input&quot;: &quot;The quick brown fox jumps over the lazy dog. This pangram sentence contains every letter of the English alphabet at least once.&quot;,
+            &quot;output&quot;: &quot;This is a pangram that includes all 26 letters of the English alphabet.&quot;
+        },
+        {
+            &quot;instruction&quot;: &quot;Write a Python function that calculates the factorial of a number:&quot;,
+            &quot;input&quot;: &quot;5&quot;,
+            &quot;output&quot;: &quot;def factorial(n):\n    if n == 0 or n == 1:\n        return 1\n    return n * factorial(n - 1)\n\nresult = factorial(5)  # Returns 120&quot;
+        }
+    ]
+
+    print(&quot;Instruction Tuning形式:&quot;)
+    for i, example in enumerate(instruction_examples[:2]):
+        print(f&quot;\n例 {i+1}:&quot;)
+        print(f&quot;Instruction: {example[&#39;instruction&#39;]}&quot;)
+        print(f&quot;Input: {example[&#39;input&#39;]}&quot;)
+        print(f&quot;Output: {example[&#39;output&#39;]}&quot;)
+
+    # プロンプトテンプレート
+    print(&quot;\n\nプロンプトテンプレート:&quot;)
+    template = &quot;&quot;&quot;### Instruction:
+</code></pre></div>
+<p>{instruction}</p>
+<h3 id="input">Input:<a class="headerlink" href="#input" title="Permanent link">&para;</a></h3>
+<p>{input}</p>
+<h3 id="response">Response:<a class="headerlink" href="#response" title="Permanent link">&para;</a></h3>
+<p>{output}"""</p>
+<div class="highlight"><pre><span></span><code>    print(template)
+
+    print(&quot;\n効果:&quot;)
+    print(&quot;✓ 明確な指示に従う能力の向上&quot;)
+    print(&quot;✓ ゼロショット汎化の改善&quot;)
+    print(&quot;✓ より自然な対話が可能&quot;)
+</code></pre></div>
+<h2 id="184">18.4 効率的な学習手法<a class="headerlink" href="#184" title="Permanent link">&para;</a></h2>
+<p>class EfficientTrainingMethods:
+    """効率的な学習手法"""</p>
+<div class="highlight"><pre><span></span><code>def demonstrate_mixed_precision(self):
+    &quot;&quot;&quot;Mixed Precision Trainingのデモ&quot;&quot;&quot;
+    print(&quot;=== Mixed Precision Training ===\n&quot;)
+
+    print(&quot;通常の学習 (FP32):&quot;)
+    print(&quot;  メモリ使用量: 100%&quot;)
+    print(&quot;  計算速度: 1.0x&quot;)
+    print(&quot;  数値精度: 高い\n&quot;)
+
+    print(&quot;Mixed Precision (FP16 + FP32):&quot;)
+    print(&quot;  メモリ使用量: ~50%&quot;)
+    print(&quot;  計算速度: 2-3x&quot;)
+    print(&quot;  数値精度: 動的ロススケーリングで維持\n&quot;)
+
+    # 実装例
+    print(&quot;PyTorch実装例:&quot;)
+    print(&quot;&quot;&quot;
+</code></pre></div>
+<p>from torch.cuda.amp import autocast, GradScaler</p>
+<p>scaler = GradScaler()</p>
+<p>for batch in dataloader:
+    optimizer.zero_grad()</p>
+<div class="highlight"><pre><span></span><code># 自動混合精度
+with autocast():
+    outputs = model(batch[&#39;input_ids&#39;])
+    loss = criterion(outputs, batch[&#39;labels&#39;])
+
+# スケールされた逆伝播
+scaler.scale(loss).backward()
+scaler.step(optimizer)
+scaler.update()
+</code></pre></div>
+<p>""")</p>
+<div class="highlight"><pre><span></span><code>def demonstrate_gradient_accumulation(self):
+    &quot;&quot;&quot;勾配累積のデモ&quot;&quot;&quot;
+    print(&quot;\n=== Gradient Accumulation ===\n&quot;)
+
+    print(&quot;効果的なバッチサイズの増加:&quot;)
+    print(&quot;  実バッチサイズ: 8&quot;)
+    print(&quot;  累積ステップ: 4&quot;)
+    print(&quot;  効果的バッチサイズ: 32\n&quot;)
+
+    # メモリ使用量の比較
+    batch_sizes = [8, 16, 32, 64, 128]
+    memory_usage = [2, 4, 8, 16, 32]  # GB
+    effective_batch_with_accumulation = [32, 64, 128, 256, 512]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    x = np.arange(len(batch_sizes))
+    width = 0.35
+
+    bars1 = ax.bar(x - width/2, memory_usage, width, 
+                   label=&#39;Direct (OOM risk)&#39;, color=&#39;red&#39;, alpha=0.7)
+    bars2 = ax.bar(x + width/2, [2] * len(batch_sizes), width,
+                   label=&#39;With Gradient Accumulation&#39;, color=&#39;green&#39;, alpha=0.7)
+
+    # 効果的バッチサイズを表示
+    for i, (bar, eff_batch) in enumerate(zip(bars2, effective_batch_with_accumulation)):
+        ax.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.5,
+               f&#39;Eff: {eff_batch}&#39;, ha=&#39;center&#39;, va=&#39;bottom&#39;, fontsize=8)
+
+    ax.set_xlabel(&#39;Actual Batch Size&#39;)
+    ax.set_ylabel(&#39;Memory Usage (GB)&#39;)
+    ax.set_title(&#39;Memory Usage: Direct vs Gradient Accumulation&#39;)
+    ax.set_xticks(x)
+    ax.set_xticklabels(batch_sizes)
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis=&#39;y&#39;)
+
+    # GPUメモリ制限ライン
+    ax.axhline(y=16, color=&#39;orange&#39;, linestyle=&#39;--&#39;, 
+              label=&#39;GPU Memory Limit (16GB)&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+def demonstrate_data_parallelism(self):
+    &quot;&quot;&quot;データ並列のデモ&quot;&quot;&quot;
+    print(&quot;\n=== Data Parallelism ===\n&quot;)
+
+    strategies = {
+        &quot;Single GPU&quot;: {
+            &quot;GPUs&quot;: 1,
+            &quot;Batch/GPU&quot;: 8,
+            &quot;Total Batch&quot;: 8,
+            &quot;Speed&quot;: &quot;1x&quot;
+        },
+        &quot;Data Parallel&quot;: {
+            &quot;GPUs&quot;: 4,
+            &quot;Batch/GPU&quot;: 8,
+            &quot;Total Batch&quot;: 32,
+            &quot;Speed&quot;: &quot;~3.8x&quot;
+        },
+        &quot;Distributed Data Parallel&quot;: {
+            &quot;GPUs&quot;: 4,
+            &quot;Batch/GPU&quot;: 8,
+            &quot;Total Batch&quot;: 32,
+            &quot;Speed&quot;: &quot;~3.95x&quot;
+        },
+        &quot;FSDP (Fully Sharded)&quot;: {
+            &quot;GPUs&quot;: 4,
+            &quot;Batch/GPU&quot;: 16,
+            &quot;Total Batch&quot;: 64,
+            &quot;Speed&quot;: &quot;~3.9x&quot;
+        }
+    }
+
+    print(&quot;並列化戦略の比較:\n&quot;)
+    for name, details in strategies.items():
+        print(f&quot;{name}:&quot;)
+        for key, value in details.items():
+            print(f&quot;  {key}: {value}&quot;)
+        print()
+</code></pre></div>
+<h1 id="_4">実行とデモ<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h1>
+<p>def run_pretraining_finetuning_demo():
+    """事前学習とファインチューニングのデモ"""
+    print("=" * 70)
+    print("事前学習とファインチューニングの詳解")
+    print("=" * 70 + "\n")</p>
+<div class="highlight"><pre><span></span><code># 1. 事前学習目的関数
+objectives = PretrainingObjectives()
+objectives.explain_objectives()
+
+# 2. 事前学習パイプライン（概要のみ）
+print(&quot;\n=== 事前学習パイプラインの例 ===&quot;)
+config = {
+    &quot;learning_rate&quot;: 6e-4,
+    &quot;weight_decay&quot;: 0.01,
+    &quot;warmup_steps&quot;: 10000,
+    &quot;total_steps&quot;: 1000000,
+    &quot;num_epochs&quot;: 1,
+    &quot;log_interval&quot;: 100,
+    &quot;max_grad_norm&quot;: 1.0
+}
+
+print(&quot;典型的な設定:&quot;)
+for key, value in config.items():
+    print(f&quot;  {key}: {value}&quot;)
+
+# 3. ファインチューニング戦略
+print(&quot;\n&quot;)
+strategies = FineTuningStrategies()
+strategies.explain_strategies()
+
+# 4. 実践例
+print(&quot;\n&quot;)
+practical = PracticalFineTuning()
+practical.sentiment_analysis_example()
+practical.instruction_tuning_example()
+
+# 5. 効率的な学習
+print(&quot;\n&quot;)
+efficient = EfficientTrainingMethods()
+efficient.demonstrate_mixed_precision()
+efficient.demonstrate_gradient_accumulation()
+efficient.demonstrate_data_parallelism()
+
+print(&quot;\n&quot; + &quot;=&quot; * 70)
+print(&quot;まとめ&quot;)
+print(&quot;=&quot; * 70)
+print(&quot;\n事前学習とファインチューニングのポイント:&quot;)
+print(&quot;• 事前学習: 大規模データで汎用的な言語理解を獲得&quot;)
+print(&quot;• ファインチューニング: 特定タスクへの効率的な適応&quot;)
+print(&quot;• パラメータ効率的手法: 少ないリソースで高性能を実現&quot;)
+print(&quot;• 最適化技術: Mixed Precision、勾配累積などで効率化&quot;)
+print(&quot;\nこれらの技術により、限られたリソースでも&quot;)
+print(&quot;高性能なモデルの開発が可能になりました。&quot;)
+</code></pre></div>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    run_pretraining_finetuning_demo()</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="最終更新日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="作成日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

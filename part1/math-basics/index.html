@@ -1,0 +1,3402 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="プログラミング言語実装者のためのTransformer解説と実装">
+      
+      
+        <meta name="author" content="Your Name">
+      
+      
+        <link rel="canonical" href="https://yourusername.github.io/easy-transformer/part1/math-basics/">
+      
+      
+        <link rel="prev" href="../similarities/">
+      
+      
+        <link rel="next" href="../pytorch-basics/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>必要な数学的基礎 - Transformerを一から理解する</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../.." title="Transformerを一から理解する" class="md-header__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Transformerを一から理解する
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              必要な数学的基礎
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../why-transformer/" class="md-tabs__link">
+          
+  
+  第1部 導入と基礎概念
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part2/tokenization/" class="md-tabs__link">
+          
+  
+  第2部 Transformerへの道のり
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part3/multi-head-attention/" class="md-tabs__link">
+          
+  
+  第3部 Transformerアーキテクチャ詳解
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part4/minimal-transformer/" class="md-tabs__link">
+          
+  
+  第4部 実装編
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part5/gpt-architecture/" class="md-tabs__link">
+          
+  
+  第5部 LLMへの拡張
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../exercises/part1-exercises/" class="md-tabs__link">
+          
+  
+  演習問題
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../advanced/optimization/" class="md-tabs__link">
+          
+  
+  発展的なトピック
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../appendix/glossary/" class="md-tabs__link">
+          
+  
+  付録
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Transformerを一から理解する" class="md-nav__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Transformerを一から理解する
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ホーム
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    第1部 導入と基礎概念
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            第1部 導入と基礎概念
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../why-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    なぜTransformerが重要なのか
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../similarities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    プログラミング言語処理との類似点
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    必要な数学的基礎
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    必要な数学的基礎
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      はじめに：プログラマーのための数学
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 線形代数の本質的理解
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 線形代数の本質的理解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      ベクトル：データの基本単位
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 確率・統計の実践的理解
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 確率・統計の実践的理解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      確率分布：不確実性の表現
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 微分とバックプロパゲーション
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 微分とバックプロパゲーション">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      勾配：関数の変化の方向
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#34" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 実践：数学をコードで確認
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 実践：数学をコードで確認">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transformer" class="md-nav__link">
+    <span class="md-ellipsis">
+      完全なTransformerブロックの数学
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      まとめ：数学は実装で理解する
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      演習問題
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pytorch-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyTorchの最小限の使い方
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第2部 Transformerへの道のり
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            第2部 Transformerへの道のり
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/tokenization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    単語の数値表現
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/attention-intuition/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    注意機構の直感的理解
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/positional-encoding/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    位置エンコーディング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/layers-and-deep-learning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    層の概念と深層学習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第3部 Transformerアーキテクチャ詳解
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            第3部 Transformerアーキテクチャ詳解
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/multi-head-attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-Head Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/feed-forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feed Forward Network
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/residual-normalization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    残差接続と層正規化
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/encoder-decoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    エンコーダとデコーダ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第4部 実装編
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            第4部 実装編
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/minimal-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最小限のTransformer実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/component-implementation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    各コンポーネントの実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/debugging-visualization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    デバッグとビジュアライゼーション
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/validation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    動作確認
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第5部 LLMへの拡張
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            第5部 LLMへの拡張
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/gpt-architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GPTアーキテクチャ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/pretraining-finetuning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    事前学習とファインチューニング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/tokenizer-details/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    トークナイザーの詳細
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/inference-techniques/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    推論時の工夫
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    演習問題
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            演習問題
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part1-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第1部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part2-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第2部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part3-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第3部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part4-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第4部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part5-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第5部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    発展的なトピック
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            発展的なトピック
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/optimization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最適化技術
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/multimodal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    マルチモーダル
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    付録
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            付録
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用語集
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    参考資料
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">必要な数学的基礎<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">はじめに：プログラマーのための数学<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>「数学は苦手...」そんな声が聞こえてきそうですが、心配はいりません。プログラミング言語を実装できるあなたは、すでに多くの数学的概念を使いこなしています。再帰、グラフ理論、計算量解析...これらはすべて数学です。</p>
+<p>この章では、Transformerを理解するために必要な数学を、プログラマーの視点から解説します。抽象的な定理ではなく、実装可能なコードとして数学を理解していきましょう。</p>
+<h2 id="31">3.1 線形代数の本質的理解<a class="headerlink" href="#31" title="Permanent link">&para;</a></h2>
+<h3 id="_3">ベクトル：データの基本単位<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>プログラミングでは配列やリストを日常的に扱います。ベクトルは、これらに「幾何学的な意味」を与えたものです：</p>
+<p>```python
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import torch
+import torch.nn as nn
+from typing import List, Tuple, Optional</p>
+<p>class VectorBasics:
+    """ベクトルの基本概念を実装で理解"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.examples = {
+        &quot;word_embedding&quot;: &quot;単語の意味をベクトルで表現&quot;,
+        &quot;program_state&quot;: &quot;プログラムの状態をベクトルで表現&quot;,
+        &quot;feature_vector&quot;: &quot;特徴量をベクトルで表現&quot;
+    }
+
+def vector_as_array(self):
+    &quot;&quot;&quot;ベクトルは単なる数値の配列&quot;&quot;&quot;
+    # プログラマーにとって馴染みのある表現
+    array = [1.0, 2.0, 3.0]
+
+    # NumPyベクトル
+    np_vector = np.array(array)
+
+    # PyTorchテンソル
+    torch_vector = torch.tensor(array)
+
+    print(&quot;=== ベクトルの表現 ===&quot;)
+    print(f&quot;Python list: {array}&quot;)
+    print(f&quot;NumPy array: {np_vector}&quot;)
+    print(f&quot;PyTorch tensor: {torch_vector}&quot;)
+
+    return array, np_vector, torch_vector
+
+def vector_as_point(self):
+    &quot;&quot;&quot;ベクトルは空間上の点&quot;&quot;&quot;
+    fig = plt.figure(figsize=(15, 5))
+
+    # 2次元ベクトル
+    ax1 = fig.add_subplot(131)
+    vectors_2d = [
+        ([0, 0], [3, 4], &#39;v1=(3,4)&#39;),
+        ([0, 0], [5, 2], &#39;v2=(5,2)&#39;),
+        ([0, 0], [-2, 3], &#39;v3=(-2,3)&#39;)
+    ]
+
+    for start, end, label in vectors_2d:
+        ax1.arrow(start[0], start[1], 
+                 end[0]-start[0], end[1]-start[1],
+                 head_width=0.3, head_length=0.2, 
+                 fc=&#39;blue&#39;, ec=&#39;blue&#39;)
+        ax1.text(end[0]+0.2, end[1]+0.2, label)
+
+    ax1.set_xlim(-3, 6)
+    ax1.set_ylim(-1, 5)
+    ax1.grid(True)
+    ax1.set_title(&#39;2次元ベクトル&#39;)
+    ax1.set_xlabel(&#39;x&#39;)
+    ax1.set_ylabel(&#39;y&#39;)
+
+    # 3次元ベクトル
+    ax2 = fig.add_subplot(132, projection=&#39;3d&#39;)
+    vectors_3d = [
+        ([0, 0, 0], [3, 4, 2], &#39;v1&#39;),
+        ([0, 0, 0], [5, 2, 4], &#39;v2&#39;),
+        ([0, 0, 0], [-2, 3, 1], &#39;v3&#39;)
+    ]
+
+    for start, end, label in vectors_3d:
+        ax2.quiver(start[0], start[1], start[2],
+                  end[0], end[1], end[2],
+                  arrow_length_ratio=0.1)
+        ax2.text(end[0], end[1], end[2], label)
+
+    ax2.set_xlim(-3, 6)
+    ax2.set_ylim(-1, 5)
+    ax2.set_zlim(0, 5)
+    ax2.set_title(&#39;3次元ベクトル&#39;)
+    ax2.set_xlabel(&#39;x&#39;)
+    ax2.set_ylabel(&#39;y&#39;)
+    ax2.set_zlabel(&#39;z&#39;)
+
+    # 高次元ベクトルの可視化（次元削減）
+    ax3 = fig.add_subplot(133)
+
+    # 仮想的な100次元ベクトルを2次元に投影
+    np.random.seed(42)
+    high_dim_vectors = np.random.randn(50, 100)
+
+    # PCA風の次元削減（簡易版）
+    projection_matrix = np.random.randn(100, 2)
+    projected = high_dim_vectors @ projection_matrix
+
+    ax3.scatter(projected[:, 0], projected[:, 1], alpha=0.6)
+    ax3.set_title(&#39;100次元ベクトルの2次元投影&#39;)
+    ax3.set_xlabel(&#39;第1主成分&#39;)
+    ax3.set_ylabel(&#39;第2主成分&#39;)
+    ax3.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+def vector_operations(self):
+    &quot;&quot;&quot;ベクトル演算の意味&quot;&quot;&quot;
+
+    # 単語ベクトルの例
+    word_vectors = {
+        &quot;king&quot;: np.array([1.0, 0.5, 0.2, 0.8]),
+        &quot;queen&quot;: np.array([0.9, 0.6, 0.8, 0.7]),
+        &quot;man&quot;: np.array([0.8, 0.3, 0.1, 0.9]),
+        &quot;woman&quot;: np.array([0.7, 0.4, 0.7, 0.8]),
+        &quot;prince&quot;: np.array([0.9, 0.4, 0.15, 0.75]),
+        &quot;princess&quot;: np.array([0.85, 0.45, 0.65, 0.65])
+    }
+
+    print(&quot;=== ベクトル演算の意味 ===&quot;)
+
+    # 加法：概念の組み合わせ
+    print(&quot;\n1. ベクトルの加法（概念の組み合わせ）&quot;)
+    result = word_vectors[&quot;king&quot;] - word_vectors[&quot;man&quot;] + word_vectors[&quot;woman&quot;]
+    print(f&quot;&#39;king&#39; - &#39;man&#39; + &#39;woman&#39; = {result}&quot;)
+    print(f&quot;&#39;queen&#39; = {word_vectors[&#39;queen&#39;]}&quot;)
+    similarity = np.dot(result, word_vectors[&quot;queen&quot;]) / (np.linalg.norm(result) * np.linalg.norm(word_vectors[&quot;queen&quot;]))
+    print(f&quot;類似度: {similarity:.3f}&quot;)
+
+    # スカラー倍：強度の調整
+    print(&quot;\n2. スカラー倍（強度の調整）&quot;)
+    strong_king = 2.0 * word_vectors[&quot;king&quot;]
+    weak_king = 0.5 * word_vectors[&quot;king&quot;]
+    print(f&quot;通常の&#39;king&#39;: {word_vectors[&#39;king&#39;]}&quot;)
+    print(f&quot;強い&#39;king&#39; (2x): {strong_king}&quot;)
+    print(f&quot;弱い&#39;king&#39; (0.5x): {weak_king}&quot;)
+
+    # 内積：類似度の計算
+    print(&quot;\n3. 内積（類似度の計算）&quot;)
+    for word1 in [&quot;king&quot;, &quot;queen&quot;, &quot;man&quot;]:
+        for word2 in [&quot;queen&quot;, &quot;woman&quot;, &quot;prince&quot;]:
+            if word1 != word2:
+                dot_product = np.dot(word_vectors[word1], word_vectors[word2])
+                print(f&quot;&#39;{word1}&#39; · &#39;{word2}&#39; = {dot_product:.3f}&quot;)
+
+    # 可視化
+    self.visualize_vector_operations(word_vectors)
+
+def visualize_vector_operations(self, word_vectors):
+    &quot;&quot;&quot;ベクトル演算の可視化&quot;&quot;&quot;
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+    # 2次元に投影（最初の2成分）
+    words = list(word_vectors.keys())
+    vectors = np.array([word_vectors[w][:2] for w in words])
+
+    # 1. ベクトル空間での単語の配置
+    ax = axes[0]
+    for i, (word, vec) in enumerate(zip(words, vectors)):
+        ax.arrow(0, 0, vec[0], vec[1], 
+                head_width=0.05, head_length=0.05,
+                fc=f&#39;C{i}&#39;, ec=f&#39;C{i}&#39;)
+        ax.text(vec[0]+0.05, vec[1]+0.05, word, fontsize=10)
+
+    ax.set_xlim(-0.2, 1.2)
+    ax.set_ylim(-0.1, 0.8)
+    ax.grid(True)
+    ax.set_title(&#39;単語ベクトル&#39;)
+    ax.set_xlabel(&#39;次元1&#39;)
+    ax.set_ylabel(&#39;次元2&#39;)
+
+    # 2. ベクトル演算
+    ax = axes[1]
+
+    # king - man + woman ≈ queen
+    king = word_vectors[&quot;king&quot;][:2]
+    man = word_vectors[&quot;man&quot;][:2]
+    woman = word_vectors[&quot;woman&quot;][:2]
+    queen = word_vectors[&quot;queen&quot;][:2]
+
+    # 演算の可視化
+    ax.arrow(0, 0, king[0], king[1], 
+            head_width=0.05, head_length=0.05,
+            fc=&#39;red&#39;, ec=&#39;red&#39;, label=&#39;king&#39;)
+
+    # king - man
+    diff = king - man
+    ax.arrow(king[0], king[1], -man[0], -man[1],
+            head_width=0.05, head_length=0.05,
+            fc=&#39;blue&#39;, ec=&#39;blue&#39;, linestyle=&#39;--&#39;, alpha=0.5)
+
+    # + woman
+    result = diff + woman
+    ax.arrow(diff[0], diff[1], woman[0], woman[1],
+            head_width=0.05, head_length=0.05,
+            fc=&#39;green&#39;, ec=&#39;green&#39;, alpha=0.5)
+
+    # 結果とqueenの比較
+    ax.arrow(0, 0, result[0], result[1],
+            head_width=0.05, head_length=0.05,
+            fc=&#39;purple&#39;, ec=&#39;purple&#39;, linewidth=2, label=&#39;result&#39;)
+    ax.arrow(0, 0, queen[0], queen[1],
+            head_width=0.05, head_length=0.05,
+            fc=&#39;orange&#39;, ec=&#39;orange&#39;, linestyle=&#39;:&#39;, linewidth=2, label=&#39;queen&#39;)
+
+    ax.set_xlim(-0.5, 1.5)
+    ax.set_ylim(-0.5, 1.0)
+    ax.grid(True)
+    ax.set_title(&#39;king - man + woman ≈ queen&#39;)
+    ax.legend()
+
+    # 3. 内積と角度
+    ax = axes[2]
+
+    # いくつかのベクトルペアの角度を可視化
+    pairs = [(&quot;king&quot;, &quot;queen&quot;), (&quot;king&quot;, &quot;woman&quot;), (&quot;man&quot;, &quot;woman&quot;)]
+
+    for i, (w1, w2) in enumerate(pairs):
+        v1 = word_vectors[w1][:2]
+        v2 = word_vectors[w2][:2]
+
+        # ベクトルを描画
+        ax.arrow(0, 0, v1[0], v1[1],
+                head_width=0.05, head_length=0.05,
+                fc=f&#39;C{i*2}&#39;, ec=f&#39;C{i*2}&#39;, alpha=0.7)
+        ax.arrow(0, 0, v2[0], v2[1],
+                head_width=0.05, head_length=0.05,
+                fc=f&#39;C{i*2+1}&#39;, ec=f&#39;C{i*2+1}&#39;, alpha=0.7)
+
+        # 角度を計算
+        cos_angle = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+        angle = np.arccos(np.clip(cos_angle, -1, 1))
+
+        # 角度を表示
+        ax.text(0.1, 0.7 - i*0.15, 
+               f&#39;{w1}-{w2}: {np.degrees(angle):.1f}°&#39;,
+               fontsize=10)
+
+    ax.set_xlim(-0.2, 1.2)
+    ax.set_ylim(-0.1, 0.8)
+    ax.grid(True)
+    ax.set_title(&#39;ベクトル間の角度（類似度）&#39;)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<p>class MatrixOperations:
+    """行列演算の直感的理解"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.examples = {
+        &quot;linear_transform&quot;: &quot;線形変換&quot;,
+        &quot;weight_matrix&quot;: &quot;重み行列&quot;,
+        &quot;attention_matrix&quot;: &quot;注意行列&quot;
+    }
+
+def matrix_as_transformation(self):
+    &quot;&quot;&quot;行列を変換として理解&quot;&quot;&quot;
+
+    print(&quot;=== 行列は変換 ===&quot;)
+
+    # 基本的な変換行列
+    transformations = {
+        &quot;恒等変換&quot;: np.array([[1, 0], [0, 1]]),
+        &quot;拡大&quot;: np.array([[2, 0], [0, 2]]),
+        &quot;回転(45°)&quot;: np.array([[np.cos(np.pi/4), -np.sin(np.pi/4)],
+                               [np.sin(np.pi/4), np.cos(np.pi/4)]]),
+        &quot;せん断&quot;: np.array([[1, 0.5], [0, 1]]),
+        &quot;反射&quot;: np.array([[1, 0], [0, -1]])
+    }
+
+    # 元のベクトル集合（正方形）
+    square = np.array([
+        [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+    ]).T
+
+    # 可視化
+    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+    axes = axes.flatten()
+
+    for i, (name, matrix) in enumerate(transformations.items()):
+        ax = axes[i]
+
+        # 元の形
+        ax.plot(square[0], square[1], &#39;b-&#39;, linewidth=2, 
+               label=&#39;元の形&#39;, alpha=0.5)
+
+        # 変換後
+        transformed = matrix @ square
+        ax.plot(transformed[0], transformed[1], &#39;r-&#39;, linewidth=2,
+               label=&#39;変換後&#39;)
+
+        # 行列を表示
+        ax.text(0.5, 1.5, f&#39;{name}\n{matrix}&#39;, 
+               ha=&#39;center&#39;, va=&#39;bottom&#39;, fontsize=10,
+               bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, facecolor=&quot;lightyellow&quot;))
+
+        ax.set_xlim(-2, 2)
+        ax.set_ylim(-2, 2)
+        ax.grid(True, alpha=0.3)
+        ax.axhline(y=0, color=&#39;k&#39;, linewidth=0.5)
+        ax.axvline(x=0, color=&#39;k&#39;, linewidth=0.5)
+        ax.legend()
+        ax.set_aspect(&#39;equal&#39;)
+
+    # 合成変換
+    ax = axes[5]
+
+    # 回転してから拡大
+    rotate = transformations[&quot;回転(45°)&quot;]
+    scale = transformations[&quot;拡大&quot;]
+    composed = scale @ rotate  # 行列の積は変換の合成
+
+    transformed = composed @ square
+    ax.plot(square[0], square[1], &#39;b-&#39;, linewidth=2, 
+           label=&#39;元の形&#39;, alpha=0.5)
+    ax.plot(transformed[0], transformed[1], &#39;g-&#39;, linewidth=2,
+           label=&#39;回転→拡大&#39;)
+
+    ax.set_xlim(-3, 3)
+    ax.set_ylim(-3, 3)
+    ax.grid(True, alpha=0.3)
+    ax.axhline(y=0, color=&#39;k&#39;, linewidth=0.5)
+    ax.axvline(x=0, color=&#39;k&#39;, linewidth=0.5)
+    ax.legend()
+    ax.set_aspect(&#39;equal&#39;)
+    ax.set_title(&#39;合成変換&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+def matrix_multiplication_intuition(self):
+    &quot;&quot;&quot;行列積の直感的理解&quot;&quot;&quot;
+
+    print(&quot;\n=== 行列積の意味 ===&quot;)
+
+    # ニューラルネットワークの文脈で
+    class SimpleLayer:
+        def __init__(self, input_dim, output_dim):
+            # 重み行列
+            self.W = np.random.randn(output_dim, input_dim) * 0.1
+            self.b = np.zeros(output_dim)
+
+        def forward(self, x):
+            &quot;&quot;&quot;
+            x: [batch_size, input_dim]
+            W: [output_dim, input_dim]
+            output: [batch_size, output_dim]
+            &quot;&quot;&quot;
+            # 行列積の各要素は内積
+            output = x @ self.W.T + self.b
+            return output
+
+        def visualize_computation(self, x):
+            &quot;&quot;&quot;計算過程を可視化&quot;&quot;&quot;
+            batch_size = x.shape[0]
+
+            fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+            # 1. 入力
+            ax = axes[0]
+            im1 = ax.imshow(x, cmap=&#39;Blues&#39;, aspect=&#39;auto&#39;)
+            ax.set_title(&#39;入力 x&#39;)
+            ax.set_ylabel(&#39;バッチ&#39;)
+            ax.set_xlabel(&#39;入力次元&#39;)
+            plt.colorbar(im1, ax=ax)
+
+            # 2. 重み行列
+            ax = axes[1]
+            im2 = ax.imshow(self.W, cmap=&#39;RdBu&#39;, aspect=&#39;auto&#39;)
+            ax.set_title(&#39;重み行列 W&#39;)
+            ax.set_ylabel(&#39;出力次元&#39;)
+            ax.set_xlabel(&#39;入力次元&#39;)
+            plt.colorbar(im2, ax=ax)
+
+            # 3. 出力
+            ax = axes[2]
+            output = self.forward(x)
+            im3 = ax.imshow(output, cmap=&#39;Greens&#39;, aspect=&#39;auto&#39;)
+            ax.set_title(&#39;出力 y = xW^T + b&#39;)
+            ax.set_ylabel(&#39;バッチ&#39;)
+            ax.set_xlabel(&#39;出力次元&#39;)
+            plt.colorbar(im3, ax=ax)
+
+            plt.tight_layout()
+            plt.show()
+
+            # 1つの出力要素の計算を詳細に表示
+            print(&quot;\n出力の1要素の計算詳細:&quot;)
+            print(f&quot;output[0,0] = Σ(x[0,i] * W[0,i]) + b[0]&quot;)
+            dot_product = sum(x[0, i] * self.W[0, i] for i in range(x.shape[1]))
+            print(f&quot;= {dot_product:.3f} + {self.b[0]:.3f}&quot;)
+            print(f&quot;= {dot_product + self.b[0]:.3f}&quot;)
+            print(f&quot;実際の値: {output[0, 0]:.3f}&quot;)
+
+    # デモ
+    layer = SimpleLayer(input_dim=5, output_dim=3)
+    x = np.random.randn(4, 5)  # バッチサイズ4、入力次元5
+    layer.visualize_computation(x)
+
+def eigenvalues_and_eigenvectors(self):
+    &quot;&quot;&quot;固有値と固有ベクトル：行列の「本質」&quot;&quot;&quot;
+
+    print(&quot;\n=== 固有値と固有ベクトル ===&quot;)
+    print(&quot;固有ベクトル v に対して: Av = λv&quot;)
+    print(&quot;つまり、行列Aは固有ベクトルの方向を変えない（大きさだけ変える）&quot;)
+
+    # 例：共分散行列（データの主要な方向を表す）
+    # データ生成
+    np.random.seed(42)
+    mean = [2, 3]
+    cov = [[2, 1.5], [1.5, 1]]
+    data = np.random.multivariate_normal(mean, cov, 1000)
+
+    # 共分散行列を計算
+    data_centered = data - np.mean(data, axis=0)
+    cov_matrix = np.cov(data_centered.T)
+
+    # 固有値と固有ベクトルを計算
+    eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+
+    # 可視化
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    # 1. データと主成分
+    ax = axes[0]
+    ax.scatter(data[:, 0], data[:, 1], alpha=0.5, s=10)
+
+    # 固有ベクトルを表示（主成分の方向）
+    center = np.mean(data, axis=0)
+    for i in range(2):
+        # 固有値の大きさに比例した長さで表示
+        scale = np.sqrt(eigenvalues[i]) * 2
+        eigvec = eigenvectors[:, i]
+        ax.arrow(center[0], center[1],
+                eigvec[0] * scale, eigvec[1] * scale,
+                head_width=0.2, head_length=0.1,
+                fc=f&#39;C{i}&#39;, ec=f&#39;C{i}&#39;, linewidth=2,
+                label=f&#39;固有値 {eigenvalues[i]:.2f}&#39;)
+
+    ax.set_title(&#39;データの主成分（固有ベクトル）&#39;)
+    ax.legend()
+    ax.set_aspect(&#39;equal&#39;)
+    ax.grid(True, alpha=0.3)
+
+    # 2. 固有値の解釈
+    ax = axes[1]
+    ax.bar([0, 1], eigenvalues)
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels([&#39;第1主成分&#39;, &#39;第2主成分&#39;])
+    ax.set_ylabel(&#39;固有値（分散）&#39;)
+    ax.set_title(&#39;各主成分の重要度&#39;)
+
+    # 寄与率を表示
+    total_var = sum(eigenvalues)
+    for i, (x, y) in enumerate(zip([0, 1], eigenvalues)):
+        ratio = y / total_var * 100
+        ax.text(x, y + 0.05, f&#39;{ratio:.1f}%&#39;, ha=&#39;center&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+    print(f&quot;\n共分散行列:\n{cov_matrix}&quot;)
+    print(f&quot;\n固有値: {eigenvalues}&quot;)
+    print(f&quot;固有ベクトル:\n{eigenvectors}&quot;)
+    print(f&quot;\n第1主成分の寄与率: {eigenvalues[0]/sum(eigenvalues)*100:.1f}%&quot;)
+</code></pre></div>
+<p>class AttentionMathematics:
+    """Attention機構の数学的基礎"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, d_model=64):
+    self.d_model = d_model
+    self.scale = np.sqrt(d_model)
+
+def dot_product_attention(self):
+    &quot;&quot;&quot;内積注意の数学&quot;&quot;&quot;
+
+    print(&quot;=== 内積注意（Dot Product Attention）===&quot;)
+
+    # 簡単な例で説明
+    seq_len = 5
+    d_k = 4
+
+    # Query, Key, Value
+    Q = np.random.randn(seq_len, d_k)
+    K = np.random.randn(seq_len, d_k)
+    V = np.random.randn(seq_len, d_k)
+
+    # ステップ1: QとKの内積でスコアを計算
+    scores = Q @ K.T  # [seq_len, seq_len]
+    print(f&quot;1. スコア行列の形状: {scores.shape}&quot;)
+    print(f&quot;   scores[i,j] = Q[i] · K[j] （クエリiとキーjの類似度）&quot;)
+
+    # ステップ2: スケーリング
+    scaled_scores = scores / self.scale
+    print(f&quot;\n2. スケーリング: 除算 by sqrt({d_k}) = {self.scale:.2f}&quot;)
+    print(f&quot;   理由: 内積の値が大きくなりすぎるのを防ぐ&quot;)
+
+    # ステップ3: Softmax
+    attention_weights = self.softmax(scaled_scores)
+    print(f&quot;\n3. Softmax: 各行の和が1になる確率分布に変換&quot;)
+    print(f&quot;   attention_weights[i] = softmax(scaled_scores[i])&quot;)
+
+    # ステップ4: 重み付き和
+    output = attention_weights @ V
+    print(f&quot;\n4. 出力: 重み付き和&quot;)
+    print(f&quot;   output[i] = Σ_j (attention_weights[i,j] * V[j])&quot;)
+
+    # 可視化
+    self.visualize_attention_computation(Q, K, V, scores, attention_weights, output)
+
+    return output, attention_weights
+
+def softmax(self, x):
+    &quot;&quot;&quot;Softmax関数の実装&quot;&quot;&quot;
+    # 数値的安定性のため最大値を引く
+    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+
+def visualize_attention_computation(self, Q, K, V, scores, weights, output):
+    &quot;&quot;&quot;Attention計算の可視化&quot;&quot;&quot;
+
+    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+
+    # Query
+    ax = axes[0, 0]
+    im = ax.imshow(Q, cmap=&#39;Blues&#39;, aspect=&#39;auto&#39;)
+    ax.set_title(&#39;Query (Q)&#39;)
+    ax.set_ylabel(&#39;位置&#39;)
+    ax.set_xlabel(&#39;次元&#39;)
+    plt.colorbar(im, ax=ax)
+
+    # Key
+    ax = axes[0, 1]
+    im = ax.imshow(K, cmap=&#39;Oranges&#39;, aspect=&#39;auto&#39;)
+    ax.set_title(&#39;Key (K)&#39;)
+    ax.set_ylabel(&#39;位置&#39;)
+    ax.set_xlabel(&#39;次元&#39;)
+    plt.colorbar(im, ax=ax)
+
+    # Value
+    ax = axes[0, 2]
+    im = ax.imshow(V, cmap=&#39;Greens&#39;, aspect=&#39;auto&#39;)
+    ax.set_title(&#39;Value (V)&#39;)
+    ax.set_ylabel(&#39;位置&#39;)
+    ax.set_xlabel(&#39;次元&#39;)
+    plt.colorbar(im, ax=ax)
+
+    # スコア行列
+    ax = axes[1, 0]
+    im = ax.imshow(scores, cmap=&#39;RdBu&#39;, aspect=&#39;auto&#39;)
+    ax.set_title(&#39;スコア (Q·K^T)&#39;)
+    ax.set_ylabel(&#39;Query位置&#39;)
+    ax.set_xlabel(&#39;Key位置&#39;)
+    plt.colorbar(im, ax=ax)
+
+    # Attention重み
+    ax = axes[1, 1]
+    im = ax.imshow(weights, cmap=&#39;hot&#39;, aspect=&#39;auto&#39;)
+    ax.set_title(&#39;Attention重み (Softmax後)&#39;)
+    ax.set_ylabel(&#39;Query位置&#39;)
+    ax.set_xlabel(&#39;Key位置&#39;)
+    plt.colorbar(im, ax=ax)
+
+    # 出力
+    ax = axes[1, 2]
+    im = ax.imshow(output, cmap=&#39;Purples&#39;, aspect=&#39;auto&#39;)
+    ax.set_title(&#39;出力 (重み付きValue)&#39;)
+    ax.set_ylabel(&#39;位置&#39;)
+    ax.set_xlabel(&#39;次元&#39;)
+    plt.colorbar(im, ax=ax)
+
+    plt.tight_layout()
+    plt.show()
+
+def scaled_attention_importance(self):
+    &quot;&quot;&quot;スケーリングの重要性を実証&quot;&quot;&quot;
+
+    print(&quot;\n=== スケーリングの重要性 ===&quot;)
+
+    d_k_values = [4, 64, 512]
+    fig, axes = plt.subplots(1, len(d_k_values), figsize=(15, 4))
+
+    for idx, d_k in enumerate(d_k_values):
+        ax = axes[idx]
+
+        # ランダムなベクトル
+        q = np.random.randn(d_k)
+        k = np.random.randn(d_k)
+
+        # 内積
+        dot_product = np.dot(q, k)
+
+        # Softmaxの入力値の範囲
+        x_range = np.linspace(-20, 20, 1000)
+
+        # スケーリングなし
+        scores_no_scale = x_range
+        probs_no_scale = self.softmax(np.array([dot_product, 0]))
+
+        # スケーリングあり
+        scale = np.sqrt(d_k)
+        scores_scaled = x_range / scale
+        probs_scaled = self.softmax(np.array([dot_product / scale, 0]))
+
+        # Softmax関数をプロット
+        y_no_scale = np.exp(x_range) / (np.exp(x_range) + 1)
+        y_scaled = np.exp(x_range / scale) / (np.exp(x_range / scale) + 1)
+
+        ax.plot(x_range, y_no_scale, &#39;r-&#39;, label=&#39;スケーリングなし&#39;, alpha=0.7)
+        ax.plot(x_range, y_scaled, &#39;b-&#39;, label=f&#39;スケーリングあり (÷√{d_k})&#39;, alpha=0.7)
+
+        # 実際の内積値での確率を表示
+        ax.axvline(x=dot_product, color=&#39;red&#39;, linestyle=&#39;--&#39;, alpha=0.5)
+        ax.axvline(x=dot_product/scale, color=&#39;blue&#39;, linestyle=&#39;--&#39;, alpha=0.5)
+
+        ax.set_title(f&#39;d_k = {d_k}&#39;)
+        ax.set_xlabel(&#39;スコア&#39;)
+        ax.set_ylabel(&#39;Softmax出力&#39;)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+
+        # 確率値を表示
+        ax.text(0.5, 0.9, f&#39;内積: {dot_product:.2f}&#39;, 
+               transform=ax.transAxes, ha=&#39;center&#39;)
+        ax.text(0.5, 0.85, f&#39;P(スケールなし): {probs_no_scale[0]:.3f}&#39;, 
+               transform=ax.transAxes, ha=&#39;center&#39;, color=&#39;red&#39;)
+        ax.text(0.5, 0.8, f&#39;P(スケールあり): {probs_scaled[0]:.3f}&#39;, 
+               transform=ax.transAxes, ha=&#39;center&#39;, color=&#39;blue&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+    print(&quot;\n観察:&quot;)
+    print(&quot;- d_kが大きいほど、内積の値が大きくなる傾向&quot;)
+    print(&quot;- スケーリングなしでは、Softmaxが飽和して勾配消失&quot;)
+    print(&quot;- スケーリングにより、適切な勾配が保たれる&quot;)
+</code></pre></div>
+<h2 id="32">3.2 確率・統計の実践的理解<a class="headerlink" href="#32" title="Permanent link">&para;</a></h2>
+<h3 id="_4">確率分布：不確実性の表現<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>```python
+class ProbabilityDistributions:
+    """確率分布の直感的理解"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.examples = {
+        &quot;discrete&quot;: &quot;離散分布（単語の出現確率など）&quot;,
+        &quot;continuous&quot;: &quot;連続分布（パラメータの分布など）&quot;,
+        &quot;multivariate&quot;: &quot;多変量分布（埋め込みベクトルの分布など）&quot;
+    }
+
+def discrete_distributions(self):
+    &quot;&quot;&quot;離散確率分布&quot;&quot;&quot;
+
+    print(&quot;=== 離散確率分布 ===&quot;)
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+    # 1. カテゴリカル分布（単語の出現確率）
+    ax = axes[0, 0]
+    words = [&#39;the&#39;, &#39;is&#39;, &#39;a&#39;, &#39;of&#39;, &#39;and&#39;, &#39;to&#39;, &#39;in&#39;, &#39;that&#39;]
+    probs = [0.25, 0.15, 0.12, 0.10, 0.08, 0.08, 0.07, 0.05]
+    remaining = 1 - sum(probs)
+    words.append(&#39;others&#39;)
+    probs.append(remaining)
+
+    ax.bar(words, probs, color=&#39;skyblue&#39;)
+    ax.set_title(&#39;カテゴリカル分布（単語の出現確率）&#39;)
+    ax.set_ylabel(&#39;確率&#39;)
+    ax.set_xticklabels(words, rotation=45)
+
+    # エントロピーを計算
+    entropy = -sum(p * np.log(p) for p in probs if p &gt; 0)
+    ax.text(0.7, 0.9, f&#39;エントロピー: {entropy:.2f}&#39;, 
+           transform=ax.transAxes,
+           bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, facecolor=&quot;yellow&quot;))
+
+    # 2. 二項分布（成功/失敗の回数）
+    ax = axes[0, 1]
+    n = 20  # 試行回数
+    p = 0.3  # 成功確率
+    x = np.arange(0, n+1)
+
+    from scipy import stats
+    pmf = stats.binom.pmf(x, n, p)
+
+    ax.bar(x, pmf, color=&#39;lightgreen&#39;)
+    ax.set_title(f&#39;二項分布 (n={n}, p={p})&#39;)
+    ax.set_xlabel(&#39;成功回数&#39;)
+    ax.set_ylabel(&#39;確率&#39;)
+
+    # 期待値と分散
+    mean = n * p
+    var = n * p * (1 - p)
+    ax.axvline(x=mean, color=&#39;red&#39;, linestyle=&#39;--&#39;, 
+              label=f&#39;期待値: {mean:.1f}&#39;)
+    ax.legend()
+
+    # 3. ポアソン分布（稀な事象の発生回数）
+    ax = axes[1, 0]
+    lambda_ = 3  # 平均発生率
+    x = np.arange(0, 15)
+    pmf = stats.poisson.pmf(x, lambda_)
+
+    ax.bar(x, pmf, color=&#39;lightcoral&#39;)
+    ax.set_title(f&#39;ポアソン分布 (λ={lambda_})&#39;)
+    ax.set_xlabel(&#39;発生回数&#39;)
+    ax.set_ylabel(&#39;確率&#39;)
+
+    # 4. 実際のテキストデータでの単語長分布
+    ax = axes[1, 1]
+    text = &quot;&quot;&quot;Transformers have revolutionized natural language processing 
+              by introducing self-attention mechanisms that capture long-range 
+              dependencies in text without recurrence or convolution.&quot;&quot;&quot;
+
+    words = text.split()
+    lengths = [len(word) for word in words]
+
+    unique_lengths, counts = np.unique(lengths, return_counts=True)
+    probs = counts / len(lengths)
+
+    ax.bar(unique_lengths, probs, color=&#39;mediumpurple&#39;)
+    ax.set_title(&#39;実際のテキストの単語長分布&#39;)
+    ax.set_xlabel(&#39;単語長&#39;)
+    ax.set_ylabel(&#39;相対頻度&#39;)
+
+    # 統計量
+    mean_length = np.mean(lengths)
+    ax.axvline(x=mean_length, color=&#39;red&#39;, linestyle=&#39;--&#39;,
+              label=f&#39;平均: {mean_length:.1f}&#39;)
+    ax.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+def continuous_distributions(self):
+    &quot;&quot;&quot;連続確率分布&quot;&quot;&quot;
+
+    print(&quot;\n=== 連続確率分布 ===&quot;)
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+    # 1. 正規分布（ガウス分布）
+    ax = axes[0, 0]
+    x = np.linspace(-4, 4, 100)
+
+    # 異なるパラメータでの正規分布
+    params = [(0, 1, &#39;μ=0, σ=1&#39;), (0, 2, &#39;μ=0, σ=2&#39;), (2, 1, &#39;μ=2, σ=1&#39;)]
+
+    for mu, sigma, label in params:
+        y = stats.norm.pdf(x, mu, sigma)
+        ax.plot(x, y, label=label, linewidth=2)
+
+    ax.set_title(&#39;正規分布&#39;)
+    ax.set_xlabel(&#39;x&#39;)
+    ax.set_ylabel(&#39;確率密度&#39;)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # 2. パラメータ初期化での利用
+    ax = axes[0, 1]
+
+    # Xavier/He初期化の比較
+    fan_in = 100
+    fan_out = 50
+
+    # Xavier初期化（活性化関数: tanh, sigmoid）
+    xavier_std = np.sqrt(2 / (fan_in + fan_out))
+
+    # He初期化（活性化関数: ReLU）
+    he_std = np.sqrt(2 / fan_in)
+
+    x = np.linspace(-0.5, 0.5, 1000)
+
+    xavier_dist = stats.norm.pdf(x, 0, xavier_std)
+    he_dist = stats.norm.pdf(x, 0, he_std)
+    uniform_dist = stats.uniform.pdf(x, -0.5, 1)
+
+    ax.plot(x, xavier_dist, label=f&#39;Xavier (σ={xavier_std:.3f})&#39;)
+    ax.plot(x, he_dist, label=f&#39;He (σ={he_std:.3f})&#39;)
+    ax.plot(x, uniform_dist * 2, label=&#39;一様分布&#39;, linestyle=&#39;--&#39;)
+
+    ax.set_title(&#39;パラメータ初期化の分布&#39;)
+    ax.set_xlabel(&#39;重みの値&#39;)
+    ax.set_ylabel(&#39;確率密度&#39;)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # 3. t分布（ロバストな推定）
+    ax = axes[1, 0]
+    x = np.linspace(-4, 4, 100)
+
+    # 自由度による形状の変化
+    dfs = [1, 3, 10, 30]
+
+    for df in dfs:
+        y = stats.t.pdf(x, df)
+        ax.plot(x, y, label=f&#39;df={df}&#39;, linewidth=2)
+
+    # 正規分布と比較
+    y_norm = stats.norm.pdf(x, 0, 1)
+    ax.plot(x, y_norm, &#39;k--&#39;, label=&#39;正規分布&#39;, linewidth=2)
+
+    ax.set_title(&#39;t分布（裾が厚い分布）&#39;)
+    ax.set_xlabel(&#39;x&#39;)
+    ax.set_ylabel(&#39;確率密度&#39;)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # 4. 実際のモデルパラメータの分布
+    ax = axes[1, 1]
+
+    # 仮想的な学習済みモデルのパラメータ
+    np.random.seed(42)
+
+    # 初期化時
+    initial_params = np.random.normal(0, 0.1, 10000)
+
+    # 学習後（仮想的）
+    trained_params = np.concatenate([
+        np.random.normal(-0.5, 0.05, 3000),  # 負の重み
+        np.random.normal(0, 0.02, 4000),     # ゼロ付近
+        np.random.normal(0.5, 0.05, 3000)    # 正の重み
+    ])
+
+    ax.hist(initial_params, bins=50, alpha=0.5, density=True, 
+           label=&#39;初期化時&#39;, color=&#39;blue&#39;)
+    ax.hist(trained_params, bins=50, alpha=0.5, density=True,
+           label=&#39;学習後&#39;, color=&#39;red&#39;)
+
+    ax.set_title(&#39;モデルパラメータの分布変化&#39;)
+    ax.set_xlabel(&#39;パラメータ値&#39;)
+    ax.set_ylabel(&#39;密度&#39;)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+def softmax_as_probability(self):
+    &quot;&quot;&quot;Softmax関数と確率分布&quot;&quot;&quot;
+
+    print(&quot;\n=== Softmax関数：スコアから確率へ ===&quot;)
+
+    def softmax(x, temperature=1.0):
+        &quot;&quot;&quot;温度付きSoftmax&quot;&quot;&quot;
+        x = x / temperature
+        exp_x = np.exp(x - np.max(x))
+        return exp_x / np.sum(exp_x)
+
+    # ロジット（スコア）
+    logits = np.array([2.0, 1.0, 0.1, -1.0, -2.0])
+    labels = [&#39;very_pos&#39;, &#39;pos&#39;, &#39;neutral&#39;, &#39;neg&#39;, &#39;very_neg&#39;]
+
+    # 異なる温度でのSoftmax
+    temperatures = [0.1, 0.5, 1.0, 2.0, 5.0]
+
+    fig, axes = plt.subplots(1, len(temperatures), figsize=(20, 4))
+
+    for ax, temp in zip(axes, temperatures):
+        probs = softmax(logits, temperature=temp)
+
+        bars = ax.bar(labels, probs, color=&#39;lightblue&#39;)
+        ax.set_title(f&#39;Temperature = {temp}&#39;)
+        ax.set_ylabel(&#39;確率&#39;)
+        ax.set_ylim(0, 1)
+
+        # 値を表示
+        for bar, prob in zip(bars, probs):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                   f&#39;{prob:.3f}&#39;, ha=&#39;center&#39;, va=&#39;bottom&#39;)
+
+        # エントロピーを計算
+        entropy = -np.sum(probs * np.log(probs + 1e-10))
+        ax.text(0.5, 0.9, f&#39;H = {entropy:.2f}&#39;,
+               transform=ax.transAxes, ha=&#39;center&#39;,
+               bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, facecolor=&quot;yellow&quot;))
+
+    plt.tight_layout()
+    plt.show()
+
+    print(&quot;\n温度パラメータの効果:&quot;)
+    print(&quot;- 低温（T &lt; 1）: より確信的な分布（エントロピー低）&quot;)
+    print(&quot;- 高温（T &gt; 1）: より一様な分布（エントロピー高）&quot;)
+    print(&quot;- T = 1: 標準的なSoftmax&quot;)
+
+def cross_entropy_loss(self):
+    &quot;&quot;&quot;交差エントロピー損失の理解&quot;&quot;&quot;
+
+    print(&quot;\n=== 交差エントロピー損失 ===&quot;)
+
+    # 真の分布（one-hot）
+    true_dist = np.array([0, 0, 1, 0, 0])  # クラス2が正解
+
+    # 予測分布の例
+    predictions = [
+        np.array([0.1, 0.1, 0.6, 0.1, 0.1]),  # 良い予測
+        np.array([0.2, 0.2, 0.2, 0.2, 0.2]),  # 不確実な予測
+        np.array([0.6, 0.1, 0.1, 0.1, 0.1]),  # 悪い予測
+    ]
+
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+    for ax, pred in zip(axes, predictions):
+        # 交差エントロピーを計算
+        ce_loss = -np.sum(true_dist * np.log(pred + 1e-10))
+
+        # 可視化
+        x = np.arange(len(true_dist))
+        width = 0.35
+
+        bars1 = ax.bar(x - width/2, true_dist, width, 
+                       label=&#39;真の分布&#39;, alpha=0.7)
+        bars2 = ax.bar(x + width/2, pred, width,
+                       label=&#39;予測分布&#39;, alpha=0.7)
+
+        ax.set_title(f&#39;交差エントロピー: {ce_loss:.3f}&#39;)
+        ax.set_xlabel(&#39;クラス&#39;)
+        ax.set_ylabel(&#39;確率&#39;)
+        ax.set_xticks(x)
+        ax.legend()
+
+        # 正解クラスの予測確率を強調
+        correct_class = np.argmax(true_dist)
+        ax.text(correct_class, pred[correct_class] + 0.05,
+               f&#39;{pred[correct_class]:.2f}&#39;,
+               ha=&#39;center&#39;, fontweight=&#39;bold&#39;, color=&#39;red&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+    print(&quot;\n交差エントロピーの式:&quot;)
+    print(&quot;H(p, q) = -Σ p(x) log q(x)&quot;)
+    print(&quot;- p: 真の分布（通常one-hot）&quot;)
+    print(&quot;- q: 予測分布&quot;)
+    print(&quot;- 正解クラスの予測確率が高いほど損失が小さい&quot;)
+</code></pre></div>
+<p>class StatisticalConcepts:
+    """統計的概念の実装"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    pass
+
+def expectation_and_variance(self):
+    &quot;&quot;&quot;期待値と分散&quot;&quot;&quot;
+
+    print(&quot;=== 期待値と分散 ===&quot;)
+
+    # Layer Normalizationでの使用例
+    class LayerNorm:
+        def __init__(self, eps=1e-6):
+            self.eps = eps
+
+        def forward(self, x):
+            &quot;&quot;&quot;
+            x: [batch_size, seq_len, d_model]
+            &quot;&quot;&quot;
+            # 最後の次元で統計量を計算
+            mean = np.mean(x, axis=-1, keepdims=True)
+            var = np.var(x, axis=-1, keepdims=True)
+
+            # 正規化
+            x_normalized = (x - mean) / np.sqrt(var + self.eps)
+
+            return x_normalized, mean, var
+
+        def visualize_normalization(self, x):
+            &quot;&quot;&quot;正規化の効果を可視化&quot;&quot;&quot;
+            x_norm, mean, var = self.forward(x)
+
+            fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+            # 元の分布
+            ax = axes[0, 0]
+            ax.hist(x.flatten(), bins=50, alpha=0.7, density=True)
+            ax.set_title(&#39;元の分布&#39;)
+            ax.set_xlabel(&#39;値&#39;)
+            ax.set_ylabel(&#39;密度&#39;)
+
+            orig_mean = np.mean(x)
+            orig_std = np.std(x)
+            ax.axvline(x=orig_mean, color=&#39;red&#39;, linestyle=&#39;--&#39;,
+                      label=f&#39;μ={orig_mean:.2f}&#39;)
+            ax.axvline(x=orig_mean + orig_std, color=&#39;green&#39;, linestyle=&#39;--&#39;,
+                      label=f&#39;σ={orig_std:.2f}&#39;)
+            ax.axvline(x=orig_mean - orig_std, color=&#39;green&#39;, linestyle=&#39;--&#39;)
+            ax.legend()
+
+            # 正規化後の分布
+            ax = axes[0, 1]
+            ax.hist(x_norm.flatten(), bins=50, alpha=0.7, density=True)
+            ax.set_title(&#39;正規化後の分布&#39;)
+            ax.set_xlabel(&#39;値&#39;)
+            ax.set_ylabel(&#39;密度&#39;)
+
+            norm_mean = np.mean(x_norm)
+            norm_std = np.std(x_norm)
+            ax.axvline(x=norm_mean, color=&#39;red&#39;, linestyle=&#39;--&#39;,
+                      label=f&#39;μ={norm_mean:.2f}&#39;)
+            ax.axvline(x=norm_mean + norm_std, color=&#39;green&#39;, linestyle=&#39;--&#39;,
+                      label=f&#39;σ={norm_std:.2f}&#39;)
+            ax.axvline(x=norm_mean - norm_std, color=&#39;green&#39;, linestyle=&#39;--&#39;)
+            ax.legend()
+
+            # 各サンプルの統計量
+            ax = axes[1, 0]
+            sample_means = mean.flatten()
+            sample_vars = var.flatten()
+
+            scatter = ax.scatter(sample_means, sample_vars, alpha=0.6)
+            ax.set_xlabel(&#39;平均&#39;)
+            ax.set_ylabel(&#39;分散&#39;)
+            ax.set_title(&#39;各サンプルの統計量&#39;)
+            ax.grid(True, alpha=0.3)
+
+            # 正規化の安定性
+            ax = axes[1, 1]
+
+            # 異なるスケールのデータで比較
+            scales = [0.1, 1.0, 10.0, 100.0]
+            colors = plt.cm.viridis(np.linspace(0, 1, len(scales)))
+
+            for scale, color in zip(scales, colors):
+                x_scaled = x * scale
+                x_scaled_norm, _, _ = self.forward(x_scaled)
+
+                ax.hist(x_scaled_norm.flatten(), bins=30, alpha=0.5,
+                       density=True, color=color,
+                       label=f&#39;scale={scale}&#39;)
+
+            ax.set_title(&#39;異なるスケールでも同じ分布に正規化&#39;)
+            ax.set_xlabel(&#39;正規化後の値&#39;)
+            ax.set_ylabel(&#39;密度&#39;)
+            ax.legend()
+
+            plt.tight_layout()
+            plt.show()
+
+    # デモ
+    ln = LayerNorm()
+
+    # バッチデータ（異なる統計量を持つ）
+    batch_size, seq_len, d_model = 32, 10, 64
+    x = np.random.randn(batch_size, seq_len, d_model)
+
+    # 一部のサンプルに異なるスケールを適用
+    x[10:15] *= 5.0  # 大きな値
+    x[20:25] *= 0.1  # 小さな値
+
+    ln.visualize_normalization(x)
+
+def correlation_and_covariance(self):
+    &quot;&quot;&quot;相関と共分散&quot;&quot;&quot;
+
+    print(&quot;\n=== 相関と共分散 ===&quot;)
+
+    # Attention での相関の重要性
+    def attention_as_correlation():
+        &quot;&quot;&quot;Attentionを相関として理解&quot;&quot;&quot;
+
+        # 例：文中の単語間の関係
+        sentence = &quot;The cat sat on the mat&quot;
+        words = sentence.split()
+        n_words = len(words)
+
+        # 仮想的な単語埋め込み
+        np.random.seed(42)
+        d_model = 64
+        embeddings = np.random.randn(n_words, d_model)
+
+        # 特定の単語を類似させる
+        embeddings[1] *= 0.8  # cat
+        embeddings[5] *= 0.8  # mat（catと韻を踏む）
+
+        # 相関行列を計算
+        correlation_matrix = np.corrcoef(embeddings)
+
+        # Attention スコア（正規化前）
+        attention_scores = embeddings @ embeddings.T
+
+        # 可視化
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+        # 相関行列
+        ax = axes[0]
+        im = ax.imshow(correlation_matrix, cmap=&#39;RdBu&#39;, vmin=-1, vmax=1)
+        ax.set_xticks(range(n_words))
+        ax.set_yticks(range(n_words))
+        ax.set_xticklabels(words, rotation=45)
+        ax.set_yticklabels(words)
+        ax.set_title(&#39;単語埋め込みの相関行列&#39;)
+        plt.colorbar(im, ax=ax)
+
+        # Attentionスコア
+        ax = axes[1]
+        im = ax.imshow(attention_scores, cmap=&#39;hot&#39;)
+        ax.set_xticks(range(n_words))
+        ax.set_yticks(range(n_words))
+        ax.set_xticklabels(words, rotation=45)
+        ax.set_yticklabels(words)
+        ax.set_title(&#39;Attentionスコア（内積）&#39;)
+        plt.colorbar(im, ax=ax)
+
+        plt.tight_layout()
+        plt.show()
+
+        print(&quot;観察:&quot;)
+        print(&quot;- 相関が高い単語ペアは、Attentionスコアも高い&quot;)
+        print(&quot;- &#39;cat&#39;と&#39;mat&#39;のように韻を踏む単語は相関が高い&quot;)
+        print(&quot;- Attentionは単語間の意味的類似性を捉える&quot;)
+
+    attention_as_correlation()
+</code></pre></div>
+<h2 id="33">3.3 微分とバックプロパゲーション<a class="headerlink" href="#33" title="Permanent link">&para;</a></h2>
+<h3 id="_5">勾配：関数の変化の方向<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>```python
+class GradientConcepts:
+    """勾配の概念を実装で理解"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.history = []
+
+def gradient_visualization(self):
+    &quot;&quot;&quot;勾配の可視化&quot;&quot;&quot;
+
+    print(&quot;=== 勾配：最適化の方向 ===&quot;)
+
+    # 1次元の例
+    def f1d(x):
+        return x**2 - 4*x + 3
+
+    def df1d_dx(x):
+        return 2*x - 4
+
+    # 2次元の例（損失関数の景観）
+    def f2d(x, y):
+        return (x - 2)**2 + (y - 3)**2 + 0.5*x*y
+
+    def grad_f2d(x, y):
+        df_dx = 2*(x - 2) + 0.5*y
+        df_dy = 2*(y - 3) + 0.5*x
+        return df_dx, df_dy
+
+    fig = plt.figure(figsize=(15, 5))
+
+    # 1次元関数と勾配
+    ax1 = fig.add_subplot(131)
+    x = np.linspace(-2, 6, 100)
+    y = f1d(x)
+    ax1.plot(x, y, &#39;b-&#39;, linewidth=2, label=&#39;f(x) = x² - 4x + 3&#39;)
+
+    # いくつかの点での勾配
+    sample_points = [-1, 0, 2, 4, 5]
+    for x_point in sample_points:
+        y_point = f1d(x_point)
+        grad = df1d_dx(x_point)
+
+        # 接線を描画
+        tangent_x = np.linspace(x_point - 0.5, x_point + 0.5, 10)
+        tangent_y = y_point + grad * (tangent_x - x_point)
+        ax1.plot(tangent_x, tangent_y, &#39;r-&#39;, linewidth=1, alpha=0.7)
+
+        # 勾配の方向を矢印で表示
+        arrow_scale = 0.3
+        ax1.arrow(x_point, y_point, 
+                 arrow_scale, arrow_scale * grad,
+                 head_width=0.1, head_length=0.05,
+                 fc=&#39;green&#39;, ec=&#39;green&#39;)
+
+        ax1.plot(x_point, y_point, &#39;ro&#39;, markersize=8)
+        ax1.text(x_point, y_point - 0.5, f&#39;∇={grad:.1f}&#39;,
+                ha=&#39;center&#39;, fontsize=8)
+
+    ax1.set_xlabel(&#39;x&#39;)
+    ax1.set_ylabel(&#39;f(x)&#39;)
+    ax1.set_title(&#39;1次元関数の勾配&#39;)
+    ax1.grid(True, alpha=0.3)
+    ax1.legend()
+
+    # 2次元関数の等高線と勾配
+    ax2 = fig.add_subplot(132)
+    x = np.linspace(-1, 5, 100)
+    y = np.linspace(-1, 7, 100)
+    X, Y = np.meshgrid(x, y)
+    Z = f2d(X, Y)
+
+    # 等高線
+    contour = ax2.contour(X, Y, Z, levels=20, alpha=0.6)
+    ax2.clabel(contour, inline=True, fontsize=8)
+
+    # 勾配ベクトル場
+    x_sparse = np.linspace(-1, 5, 10)
+    y_sparse = np.linspace(-1, 7, 10)
+    X_sparse, Y_sparse = np.meshgrid(x_sparse, y_sparse)
+
+    # 各点での勾配
+    U = np.zeros_like(X_sparse)
+    V = np.zeros_like(Y_sparse)
+
+    for i in range(len(x_sparse)):
+        for j in range(len(y_sparse)):
+            grad_x, grad_y = grad_f2d(X_sparse[j, i], Y_sparse[j, i])
+            U[j, i] = -grad_x  # 負の勾配（降下方向）
+            V[j, i] = -grad_y
+
+    # 勾配ベクトルを描画
+    ax2.quiver(X_sparse, Y_sparse, U, V, color=&#39;red&#39;, alpha=0.7)
+
+    ax2.set_xlabel(&#39;x&#39;)
+    ax2.set_ylabel(&#39;y&#39;)
+    ax2.set_title(&#39;2次元関数の勾配ベクトル場&#39;)
+    ax2.set_aspect(&#39;equal&#39;)
+
+    # 最適化の軌跡
+    ax3 = fig.add_subplot(133)
+
+    # 勾配降下法の実装
+    def gradient_descent(start_point, learning_rate=0.1, n_steps=50):
+        trajectory = [start_point]
+        point = np.array(start_point)
+
+        for _ in range(n_steps):
+            grad = np.array(grad_f2d(point[0], point[1]))
+            point = point - learning_rate * grad
+            trajectory.append(point.copy())
+
+        return np.array(trajectory)
+
+    # 異なる開始点からの軌跡
+    start_points = [(-0.5, 6), (4.5, 0), (4, 6)]
+    colors = [&#39;blue&#39;, &#39;green&#39;, &#39;purple&#39;]
+
+    # 等高線を再描画
+    contour = ax3.contour(X, Y, Z, levels=20, alpha=0.3)
+
+    for start, color in zip(start_points, colors):
+        trajectory = gradient_descent(start, learning_rate=0.1)
+        ax3.plot(trajectory[:, 0], trajectory[:, 1], 
+                f&#39;{color[0]}-&#39;, linewidth=2, label=f&#39;開始: {start}&#39;)
+        ax3.plot(trajectory[0, 0], trajectory[0, 1], 
+                f&#39;{color[0]}o&#39;, markersize=10)
+        ax3.plot(trajectory[-1, 0], trajectory[-1, 1], 
+                f&#39;{color[0]}*&#39;, markersize=15)
+
+    # 最小値の位置
+    ax3.plot(2, 3, &#39;r*&#39;, markersize=20, label=&#39;最小値&#39;)
+
+    ax3.set_xlabel(&#39;x&#39;)
+    ax3.set_ylabel(&#39;y&#39;)
+    ax3.set_title(&#39;勾配降下法の軌跡&#39;)
+    ax3.legend()
+    ax3.set_aspect(&#39;equal&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+def chain_rule_demonstration(self):
+    &quot;&quot;&quot;連鎖律の実演&quot;&quot;&quot;
+
+    print(&quot;\n=== 連鎖律：複合関数の微分 ===&quot;)
+
+    # 簡単なニューラルネットワークで説明
+    class SimpleNetwork:
+        def __init__(self):
+            # パラメータ
+            self.W1 = np.array([[0.5, -0.3], [0.2, 0.8]])
+            self.b1 = np.array([0.1, -0.1])
+            self.W2 = np.array([[0.7], [-0.4]])
+            self.b2 = np.array([0.2])
+
+            # 中間値を保存
+            self.cache = {}
+
+        def relu(self, x):
+            return np.maximum(0, x)
+
+        def relu_derivative(self, x):
+            return (x &gt; 0).astype(float)
+
+        def forward(self, x):
+            &quot;&quot;&quot;順伝播&quot;&quot;&quot;
+            # 層1: z1 = W1 @ x + b1
+            self.cache[&#39;x&#39;] = x
+            self.cache[&#39;z1&#39;] = self.W1 @ x + self.b1
+
+            # 活性化: a1 = ReLU(z1)
+            self.cache[&#39;a1&#39;] = self.relu(self.cache[&#39;z1&#39;])
+
+            # 層2: z2 = W2 @ a1 + b2
+            self.cache[&#39;z2&#39;] = self.W2 @ self.cache[&#39;a1&#39;] + self.b2
+
+            # 出力（線形）
+            y = self.cache[&#39;z2&#39;]
+
+            return y
+
+        def backward(self, y, y_true):
+            &quot;&quot;&quot;逆伝播（連鎖律を使用）&quot;&quot;&quot;
+            # 損失: L = 0.5 * (y - y_true)^2
+
+            # ∂L/∂y
+            dL_dy = y - y_true
+
+            # ∂L/∂z2 = ∂L/∂y * ∂y/∂z2 = dL_dy * 1
+            dL_dz2 = dL_dy
+
+            # ∂L/∂W2 = ∂L/∂z2 * ∂z2/∂W2 = dL_dz2 * a1^T
+            dL_dW2 = dL_dz2 @ self.cache[&#39;a1&#39;].reshape(1, -1)
+
+            # ∂L/∂b2 = ∂L/∂z2 * ∂z2/∂b2 = dL_dz2 * 1
+            dL_db2 = dL_dz2
+
+            # ∂L/∂a1 = ∂L/∂z2 * ∂z2/∂a1 = W2^T @ dL_dz2
+            dL_da1 = self.W2.T @ dL_dz2
+
+            # ∂L/∂z1 = ∂L/∂a1 * ∂a1/∂z1 = dL_da1 * ReLU&#39;(z1)
+            dL_dz1 = dL_da1.flatten() * self.relu_derivative(self.cache[&#39;z1&#39;])
+
+            # ∂L/∂W1 = ∂L/∂z1 * ∂z1/∂W1 = dL_dz1 * x^T
+            dL_dW1 = np.outer(dL_dz1, self.cache[&#39;x&#39;])
+
+            # ∂L/∂b1 = ∂L/∂z1 * ∂z1/∂b1 = dL_dz1 * 1
+            dL_db1 = dL_dz1
+
+            gradients = {
+                &#39;W1&#39;: dL_dW1,
+                &#39;b1&#39;: dL_db1,
+                &#39;W2&#39;: dL_dW2,
+                &#39;b2&#39;: dL_db2
+            }
+
+            return gradients
+
+        def visualize_computation_graph(self):
+            &quot;&quot;&quot;計算グラフの可視化&quot;&quot;&quot;
+            import networkx as nx
+
+            G = nx.DiGraph()
+
+            # ノードを追加
+            nodes = [&#39;x&#39;, &#39;W1&#39;, &#39;b1&#39;, &#39;z1&#39;, &#39;a1&#39;, &#39;W2&#39;, &#39;b2&#39;, &#39;z2&#39;, &#39;y&#39;, &#39;L&#39;]
+            node_colors = {
+                &#39;x&#39;: &#39;lightblue&#39;,
+                &#39;W1&#39;: &#39;lightgreen&#39;, &#39;b1&#39;: &#39;lightgreen&#39;,
+                &#39;W2&#39;: &#39;lightgreen&#39;, &#39;b2&#39;: &#39;lightgreen&#39;,
+                &#39;z1&#39;: &#39;lightyellow&#39;, &#39;a1&#39;: &#39;lightyellow&#39;,
+                &#39;z2&#39;: &#39;lightyellow&#39;, &#39;y&#39;: &#39;lightyellow&#39;,
+                &#39;L&#39;: &#39;lightcoral&#39;
+            }
+
+            for node in nodes:
+                G.add_node(node)
+
+            # エッジを追加（計算の依存関係）
+            edges = [
+                (&#39;x&#39;, &#39;z1&#39;), (&#39;W1&#39;, &#39;z1&#39;), (&#39;b1&#39;, &#39;z1&#39;),
+                (&#39;z1&#39;, &#39;a1&#39;),
+                (&#39;a1&#39;, &#39;z2&#39;), (&#39;W2&#39;, &#39;z2&#39;), (&#39;b2&#39;, &#39;z2&#39;),
+                (&#39;z2&#39;, &#39;y&#39;),
+                (&#39;y&#39;, &#39;L&#39;)
+            ]
+
+            G.add_edges_from(edges)
+
+            # レイアウト
+            pos = {
+                &#39;x&#39;: (0, 2),
+                &#39;W1&#39;: (-1, 1), &#39;b1&#39;: (1, 1),
+                &#39;z1&#39;: (0, 1),
+                &#39;a1&#39;: (0, 0),
+                &#39;W2&#39;: (-1, -1), &#39;b2&#39;: (1, -1),
+                &#39;z2&#39;: (0, -1),
+                &#39;y&#39;: (0, -2),
+                &#39;L&#39;: (0, -3)
+            }
+
+            plt.figure(figsize=(10, 8))
+
+            # ノードを描画
+            for node in G.nodes():
+                nx.draw_networkx_nodes(G, pos, nodelist=[node],
+                                     node_color=node_colors[node],
+                                     node_size=1000)
+
+            # エッジを描画
+            nx.draw_networkx_edges(G, pos, edge_color=&#39;gray&#39;,
+                                 arrows=True, arrowsize=20)
+
+            # ラベルを追加
+            nx.draw_networkx_labels(G, pos, font_size=12)
+
+            # 勾配の流れを表示
+            gradient_edges = [
+                (&#39;L&#39;, &#39;y&#39;, &#39;∂L/∂y&#39;),
+                (&#39;y&#39;, &#39;z2&#39;, &#39;∂L/∂z2&#39;),
+                (&#39;z2&#39;, &#39;W2&#39;, &#39;∂L/∂W2&#39;),
+                (&#39;z2&#39;, &#39;a1&#39;, &#39;∂L/∂a1&#39;),
+                (&#39;a1&#39;, &#39;z1&#39;, &#39;∂L/∂z1&#39;),
+                (&#39;z1&#39;, &#39;W1&#39;, &#39;∂L/∂W1&#39;)
+            ]
+
+            for src, dst, label in gradient_edges:
+                # 逆方向の矢印で勾配を表示
+                if src in pos and dst in pos:
+                    x1, y1 = pos[dst]
+                    x2, y2 = pos[src]
+                    plt.annotate(&#39;&#39;, xy=(x1, y1), xytext=(x2, y2),
+                               arrowprops=dict(arrowstyle=&#39;&lt;-&#39;,
+                                             color=&#39;red&#39;,
+                                             lw=2,
+                                             alpha=0.7))
+
+            plt.title(&#39;計算グラフと勾配の逆伝播&#39;)
+            plt.axis(&#39;off&#39;)
+            plt.tight_layout()
+            plt.show()
+
+    # 実演
+    net = SimpleNetwork()
+
+    # 入力
+    x = np.array([1.0, 0.5])
+    y_true = np.array([0.8])
+
+    # 順伝播
+    y = net.forward(x)
+    print(f&quot;入力: {x}&quot;)
+    print(f&quot;出力: {y}&quot;)
+    print(f&quot;目標: {y_true}&quot;)
+
+    # 逆伝播
+    gradients = net.backward(y, y_true)
+
+    print(&quot;\n勾配:&quot;)
+    for param, grad in gradients.items():
+        print(f&quot;∂L/∂{param} = \n{grad}&quot;)
+
+    # 計算グラフを可視化
+    net.visualize_computation_graph()
+
+def automatic_differentiation(self):
+    &quot;&quot;&quot;自動微分の仕組み&quot;&quot;&quot;
+
+    print(&quot;\n=== 自動微分 ===&quot;)
+
+    # PyTorchでの自動微分
+    import torch
+
+    # 計算グラフの構築と自動微分
+    x = torch.tensor(2.0, requires_grad=True)
+    y = torch.tensor(3.0, requires_grad=True)
+
+    # 複雑な関数
+    z = x ** 2 + 2 * x * y + y ** 2  # (x + y)^2
+    w = torch.sin(z) + torch.cos(x * y)
+    loss = w ** 2
+
+    # 逆伝播
+    loss.backward()
+
+    print(&quot;自動微分の結果:&quot;)
+    print(f&quot;x = {x.item():.3f}, ∂loss/∂x = {x.grad.item():.3f}&quot;)
+    print(f&quot;y = {y.item():.3f}, ∂loss/∂y = {y.grad.item():.3f}&quot;)
+
+    # 数値微分との比較
+    def numerical_gradient(f, x, h=1e-5):
+        &quot;&quot;&quot;数値微分（有限差分法）&quot;&quot;&quot;
+        return (f(x + h) - f(x - h)) / (2 * h)
+
+    # 同じ関数を通常のPythonで定義
+    def f(x_val, y_val):
+        z = x_val ** 2 + 2 * x_val * y_val + y_val ** 2
+        w = np.sin(z) + np.cos(x_val * y_val)
+        return w ** 2
+
+    # 数値微分
+    dx_numerical = numerical_gradient(lambda x: f(x, 3.0), 2.0)
+    dy_numerical = numerical_gradient(lambda y: f(2.0, y), 3.0)
+
+    print(f&quot;\n数値微分:&quot;)
+    print(f&quot;∂loss/∂x ≈ {dx_numerical:.3f}&quot;)
+    print(f&quot;∂loss/∂y ≈ {dy_numerical:.3f}&quot;)
+
+    print(f&quot;\n誤差:&quot;)
+    print(f&quot;|自動微分 - 数値微分|_x = {abs(x.grad.item() - dx_numerical):.6f}&quot;)
+    print(f&quot;|自動微分 - 数値微分|_y = {abs(y.grad.item() - dy_numerical):.6f}&quot;)
+</code></pre></div>
+<h2 id="34">3.4 実践：数学をコードで確認<a class="headerlink" href="#34" title="Permanent link">&para;</a></h2>
+<h3 id="transformer">完全なTransformerブロックの数学<a class="headerlink" href="#transformer" title="Permanent link">&para;</a></h3>
+<p>```python
+class TransformerMathematics:
+    """Transformerの数学的構成要素"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, d_model=512, n_heads=8, d_ff=2048):
+    self.d_model = d_model
+    self.n_heads = n_heads
+    self.d_ff = d_ff
+    self.d_k = d_model // n_heads
+
+def complete_transformer_block(self):
+    &quot;&quot;&quot;完全なTransformerブロックの数学&quot;&quot;&quot;
+
+    print(&quot;=== Transformerブロックの数学的構成 ===&quot;)
+
+    # 各コンポーネントの数式
+    equations = {
+        &quot;Multi-Head Attention&quot;: [
+            &quot;Q = XW_Q, K = XW_K, V = XW_V&quot;,
+            &quot;head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)&quot;,
+            &quot;MultiHead(Q,K,V) = Concat(head_1,...,head_h)W_O&quot;
+        ],
+        &quot;Scaled Dot-Product Attention&quot;: [
+            &quot;Attention(Q,K,V) = softmax(QK^T / √d_k)V&quot;
+        ],
+        &quot;Position-wise Feed Forward&quot;: [
+            &quot;FFN(x) = max(0, xW_1 + b_1)W_2 + b_2&quot;
+        ],
+        &quot;Residual Connection&quot;: [
+            &quot;output = LayerNorm(x + Sublayer(x))&quot;
+        ]
+    }
+
+    # 数式を表示
+    for component, eqs in equations.items():
+        print(f&quot;\n{component}:&quot;)
+        for eq in eqs:
+            print(f&quot;  {eq}&quot;)
+
+    # 実際の計算をステップバイステップで
+    self.step_by_step_computation()
+
+def step_by_step_computation(self):
+    &quot;&quot;&quot;ステップバイステップの計算&quot;&quot;&quot;
+
+    # 小さな例で計算過程を追跡
+    batch_size = 2
+    seq_len = 4
+    d_model = 8  # 小さくして見やすく
+    n_heads = 2
+    d_k = d_model // n_heads
+
+    print(&quot;\n=== 具体例での計算 ===&quot;)
+    print(f&quot;バッチサイズ: {batch_size}&quot;)
+    print(f&quot;シーケンス長: {seq_len}&quot;)
+    print(f&quot;モデル次元: {d_model}&quot;)
+    print(f&quot;ヘッド数: {n_heads}&quot;)
+
+    # 入力
+    X = torch.randn(batch_size, seq_len, d_model)
+
+    # 重み行列
+    W_Q = torch.randn(d_model, d_model)
+    W_K = torch.randn(d_model, d_model)
+    W_V = torch.randn(d_model, d_model)
+    W_O = torch.randn(d_model, d_model)
+
+    # Step 1: Linear projections
+    Q = X @ W_Q
+    K = X @ W_K
+    V = X @ W_V
+
+    print(f&quot;\nStep 1: 線形投影&quot;)
+    print(f&quot;Q shape: {Q.shape}&quot;)
+    print(f&quot;K shape: {K.shape}&quot;)
+    print(f&quot;V shape: {V.shape}&quot;)
+
+    # Step 2: Reshape for multi-head
+    Q = Q.view(batch_size, seq_len, n_heads, d_k).transpose(1, 2)
+    K = K.view(batch_size, seq_len, n_heads, d_k).transpose(1, 2)
+    V = V.view(batch_size, seq_len, n_heads, d_k).transpose(1, 2)
+
+    print(f&quot;\nStep 2: Multi-head用に形状変更&quot;)
+    print(f&quot;Q shape: {Q.shape} [batch, heads, seq_len, d_k]&quot;)
+
+    # Step 3: Scaled dot-product attention
+    scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(d_k)
+
+    print(f&quot;\nStep 3: スコア計算&quot;)
+    print(f&quot;Scores shape: {scores.shape}&quot;)
+    print(f&quot;Score[0,0] (第1バッチ、第1ヘッド):&quot;)
+    print(scores[0, 0])
+
+    # Step 4: Softmax
+    attn_weights = F.softmax(scores, dim=-1)
+
+    print(f&quot;\nStep 4: Softmax&quot;)
+    print(f&quot;Attention weights[0,0]:&quot;)
+    print(attn_weights[0, 0])
+    print(f&quot;各行の和: {attn_weights[0, 0].sum(dim=-1)}&quot;)
+
+    # Step 5: Apply attention to values
+    context = torch.matmul(attn_weights, V)
+
+    print(f&quot;\nStep 5: 値への適用&quot;)
+    print(f&quot;Context shape: {context.shape}&quot;)
+
+    # Step 6: Concatenate heads
+    context = context.transpose(1, 2).contiguous().view(
+        batch_size, seq_len, d_model
+    )
+
+    print(f&quot;\nStep 6: ヘッドの結合&quot;)
+    print(f&quot;Context shape: {context.shape}&quot;)
+
+    # Step 7: Output projection
+    output = context @ W_O
+
+    print(f&quot;\nStep 7: 出力投影&quot;)
+    print(f&quot;Output shape: {output.shape}&quot;)
+</code></pre></div>
+<h2 id="_6">まとめ：数学は実装で理解する<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>この章では、Transformerを理解するために必要な数学的概念を、実装を通じて学びました：</p>
+<ol>
+<li><strong>線形代数</strong></li>
+<li>ベクトル：データの表現</li>
+<li>行列：変換と関係性</li>
+<li>
+<p>内積：類似度の計算</p>
+</li>
+<li>
+<p><strong>確率・統計</strong></p>
+</li>
+<li>確率分布：不確実性の表現</li>
+<li>Softmax：スコアから確率へ</li>
+<li>
+<p>期待値と分散：正規化の基礎</p>
+</li>
+<li>
+<p><strong>微分</strong></p>
+</li>
+<li>勾配：最適化の方向</li>
+<li>連鎖律：複雑な関数の微分</li>
+<li>自動微分：効率的な計算</li>
+</ol>
+<p>これらの概念は、次章で学ぶPyTorchでの実装に直接つながります。数学は抽象的な理論ではなく、実際に動くコードとして理解することで、Transformerの動作原理がより明確になるはずです。</p>
+<h2 id="_7">演習問題<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>ベクトル演算の実装</strong></li>
+<li>2つのベクトル間のコサイン類似度を計算する関数を実装してください</li>
+<li>
+<p>単語埋め込みベクトルで「king - man + woman ≈ queen」を検証してください</p>
+</li>
+<li>
+<p><strong>行列変換の可視化</strong></p>
+</li>
+<li>任意の2×2行列による変換を可視化するプログラムを作成してください</li>
+<li>
+<p>固有ベクトルの方向が変換で保存されることを確認してください</p>
+</li>
+<li>
+<p><strong>Attention の実装</strong></p>
+</li>
+<li>Scaled Dot-Product Attentionを一から実装してください</li>
+<li>
+<p>温度パラメータを追加し、その効果を可視化してください</p>
+</li>
+<li>
+<p><strong>勾配降下法の実装</strong></p>
+</li>
+<li>2次元関数の勾配降下法を実装してください</li>
+<li>
+<p>学習率による収束の違いを比較してください</p>
+</li>
+<li>
+<p><strong>自動微分の仕組み</strong></p>
+</li>
+<li>簡単な計算グラフを作成し、手動でバックプロパゲーションを計算してください</li>
+<li>PyTorchの自動微分結果と比較してください</li>
+</ol>
+<hr />
+<p>次章では、PyTorchを使って実際にこれらの数学的概念を実装していきます。理論と実装を結びつけることで、Transformerの理解がさらに深まるでしょう。</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="最終更新日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="作成日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

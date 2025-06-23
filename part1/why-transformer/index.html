@@ -1,0 +1,1595 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="プログラミング言語実装者のためのTransformer解説と実装" name="description"/>
+<meta content="Your Name" name="author"/>
+<link href="https://yourusername.github.io/easy-transformer/part1/why-transformer/" rel="canonical"/>
+<link href="../.." rel="prev"/>
+<link href="../similarities/" rel="next"/>
+<link href="../../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.6.0, mkdocs-material-9.5.27" name="generator"/>
+<title>なぜTransformerが重要なのか - Transformerを一から理解する</title>
+<link href="../../assets/stylesheets/main.6543a935.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+</head>
+<body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#transformer">
+          コンテンツにスキップ
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="ヘッダー" class="md-header__inner md-grid">
+<a aria-label="Transformerを一から理解する" class="md-header__button md-logo" data-md-component="logo" href="../.." title="Transformerを一から理解する">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"></path></svg>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Transformerを一から理解する
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              なぜTransformerが重要なのか
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="ダークモードに切り替え" class="md-option" data-md-color-accent="indigo" data-md-color-media="" data-md-color-primary="indigo" data-md-color-scheme="default" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="ダークモードに切り替え">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"></path></svg>
+</label>
+<input aria-label="ライトモードに切り替え" class="md-option" data-md-color-accent="indigo" data-md-color-media="" data-md-color-primary="indigo" data-md-color-scheme="slate" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="ライトモードに切り替え">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"></path></svg>
+</label>
+</form>
+<script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="検索" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="検索" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+</label>
+<nav aria-label="検索" class="md-search__options">
+<button aria-label="クリア" class="md-search__icon md-icon" tabindex="-1" title="クリア" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+</button>
+</nav>
+<div class="md-search__suggest" data-md-component="search-suggest"></div>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="" tabindex="0">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            検索を初期化
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/yourusername/easy-transformer" title="リポジトリへ">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<nav aria-label="タブ" class="md-tabs" data-md-component="tabs">
+<div class="md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../..">
+        
+  
+    
+  
+  ホーム
+
+      </a>
+</li>
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="./">
+          
+  
+  第1部 導入と基礎概念
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../part2/tokenization/">
+          
+  
+  第2部 Transformerへの道のり
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../part3/multi-head-attention/">
+          
+  
+  第3部 Transformerアーキテクチャ詳解
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../part4/minimal-transformer/">
+          
+  
+  第4部 実装編
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../part5/gpt-architecture/">
+          
+  
+  第5部 LLMへの拡張
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../exercises/part1-exercises/">
+          
+  
+  演習問題
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../advanced/optimization/">
+          
+  
+  発展的なトピック
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../appendix/glossary/">
+          
+  
+  付録
+
+        </a>
+</li>
+</ul>
+</div>
+</nav>
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="ナビゲーション" class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Transformerを一から理解する" class="md-nav__button md-logo" data-md-component="logo" href="../.." title="Transformerを一から理解する">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"></path></svg>
+</a>
+    Transformerを一から理解する
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/yourusername/easy-transformer" title="リポジトリへ">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../..">
+<span class="md-ellipsis">
+    ホーム
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+<span class="md-ellipsis">
+    第1部 導入と基礎概念
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_2">
+<span class="md-nav__icon md-icon"></span>
+            第1部 導入と基礎概念
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    なぜTransformerが重要なのか
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    なぜTransformerが重要なのか
+  </span>
+</a>
+<nav aria-label="目次" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_1">
+<span class="md-ellipsis">
+      はじめに：プログラマーの世界を変えた技術
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#11-aichatgpt">
+<span class="md-ellipsis">
+      1.1 現代AIの革命：ChatGPTとその仲間たち
+    </span>
+</a>
+<nav aria-label="1.1 現代AIの革命：ChatGPTとその仲間たち" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ai">
+<span class="md-ellipsis">
+      プログラマーの日常を変えたAIツール
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#transformer_1">
+<span class="md-ellipsis">
+      Transformerが支える技術スタック
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_2">
+<span class="md-ellipsis">
+      実際の影響：開発現場での変化
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#12-transformer">
+<span class="md-ellipsis">
+      1.2 歴史的背景：なぜTransformerが生まれたか
+    </span>
+</a>
+<nav aria-label="1.2 歴史的背景：なぜTransformerが生まれたか" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#rnn">
+<span class="md-ellipsis">
+      RNNの時代とその限界
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#rnn_1">
+<span class="md-ellipsis">
+      RNNの問題を図解
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#lstmgru">
+<span class="md-ellipsis">
+      LSTMとGRU：部分的な解決策
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#attention-is-all-you-need">
+<span class="md-ellipsis">
+      Attention is All You Need: パラダイムシフト
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#transformer_2">
+<span class="md-ellipsis">
+      Transformerの革新性
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#13">
+<span class="md-ellipsis">
+      1.3 プログラミング言語処理への深い関連
+    </span>
+</a>
+<nav aria-label="1.3 プログラミング言語処理への深い関連" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+<span class="md-ellipsis">
+      コード理解・生成への応用
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_4">
+<span class="md-ellipsis">
+      プログラム解析への応用
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_5">
+<span class="md-ellipsis">
+      コンパイラ技術との接点
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_6">
+<span class="md-ellipsis">
+      最適化技術の共通性
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#14">
+<span class="md-ellipsis">
+      1.4 本書で学ぶこと：理論と実装の融合
+    </span>
+</a>
+<nav aria-label="1.4 本書で学ぶこと：理論と実装の融合" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_7">
+<span class="md-ellipsis">
+      学習のロードマップ
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_8">
+<span class="md-ellipsis">
+      実装中心のアプローチ
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_9">
+<span class="md-ellipsis">
+      デバッグとビジュアライゼーション
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_10">
+<span class="md-ellipsis">
+      応用力の獲得
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#transformer_3">
+<span class="md-ellipsis">
+      まとめ：なぜ今、Transformerを学ぶべきか
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_11">
+<span class="md-ellipsis">
+      演習問題
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_12">
+<span class="md-ellipsis">
+      参考文献
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../similarities/">
+<span class="md-ellipsis">
+    プログラミング言語処理との類似点
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../math-basics/">
+<span class="md-ellipsis">
+    必要な数学的基礎
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../pytorch-basics/">
+<span class="md-ellipsis">
+    PyTorchの最小限の使い方
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+<span class="md-ellipsis">
+    第2部 Transformerへの道のり
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+            第2部 Transformerへの道のり
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part2/tokenization/">
+<span class="md-ellipsis">
+    単語の数値表現
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part2/attention-intuition/">
+<span class="md-ellipsis">
+    注意機構の直感的理解
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part2/positional-encoding/">
+<span class="md-ellipsis">
+    位置エンコーディング
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part2/layers-and-deep-learning/">
+<span class="md-ellipsis">
+    層の概念と深層学習
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+<span class="md-ellipsis">
+    第3部 Transformerアーキテクチャ詳解
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+            第3部 Transformerアーキテクチャ詳解
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part3/multi-head-attention/">
+<span class="md-ellipsis">
+    Multi-Head Attention
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part3/feed-forward/">
+<span class="md-ellipsis">
+    Feed Forward Network
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part3/residual-normalization/">
+<span class="md-ellipsis">
+    残差接続と層正規化
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part3/encoder-decoder/">
+<span class="md-ellipsis">
+    エンコーダとデコーダ
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+<span class="md-ellipsis">
+    第4部 実装編
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_5">
+<span class="md-nav__icon md-icon"></span>
+            第4部 実装編
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part4/minimal-transformer/">
+<span class="md-ellipsis">
+    最小限のTransformer実装
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part4/component-implementation/">
+<span class="md-ellipsis">
+    各コンポーネントの実装
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part4/debugging-visualization/">
+<span class="md-ellipsis">
+    デバッグとビジュアライゼーション
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part4/validation/">
+<span class="md-ellipsis">
+    動作確認
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+<span class="md-ellipsis">
+    第5部 LLMへの拡張
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_6_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_6">
+<span class="md-nav__icon md-icon"></span>
+            第5部 LLMへの拡張
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part5/gpt-architecture/">
+<span class="md-ellipsis">
+    GPTアーキテクチャ
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part5/pretraining-finetuning/">
+<span class="md-ellipsis">
+    事前学習とファインチューニング
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part5/tokenizer-details/">
+<span class="md-ellipsis">
+    トークナイザーの詳細
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../part5/inference-techniques/">
+<span class="md-ellipsis">
+    推論時の工夫
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_7" type="checkbox"/>
+<label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+<span class="md-ellipsis">
+    演習問題
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_7_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_7">
+<span class="md-nav__icon md-icon"></span>
+            演習問題
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../exercises/part1-exercises/">
+<span class="md-ellipsis">
+    第1部 演習
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../exercises/part2-exercises/">
+<span class="md-ellipsis">
+    第2部 演習
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../exercises/part3-exercises/">
+<span class="md-ellipsis">
+    第3部 演習
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../exercises/part4-exercises/">
+<span class="md-ellipsis">
+    第4部 演習
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../exercises/part5-exercises/">
+<span class="md-ellipsis">
+    第5部 演習
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_8" type="checkbox"/>
+<label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+<span class="md-ellipsis">
+    発展的なトピック
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_8_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_8">
+<span class="md-nav__icon md-icon"></span>
+            発展的なトピック
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../advanced/optimization/">
+<span class="md-ellipsis">
+    最適化技術
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../advanced/multimodal/">
+<span class="md-ellipsis">
+    マルチモーダル
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_9" type="checkbox"/>
+<label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+<span class="md-ellipsis">
+    付録
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_9_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_9">
+<span class="md-nav__icon md-icon"></span>
+            付録
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../appendix/glossary/">
+<span class="md-ellipsis">
+    用語集
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../appendix/resources/">
+<span class="md-ellipsis">
+    参考資料
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1 id="transformer">なぜTransformerが重要なのか<a class="headerlink" href="#transformer" title="Permanent link">¶</a></h1>
+<h2 id="_1">はじめに：プログラマーの世界を変えた技術<a class="headerlink" href="#_1" title="Permanent link">¶</a></h2>
+<p>2022年11月30日、OpenAIがChatGPTを公開した日を覚えていますか？その日から、私たちプログラマーの仕事は大きく変わり始めました。コードの自動生成、バグの検出、リファクタリングの提案、そして複雑な技術的質問への即座の回答。これらすべての背後にある技術が、<strong>Transformer</strong>です。</p>
+<p>しかし、Transformerは単なる「便利なツール」を生み出しただけではありません。それは、コンピュータが「言語」を理解する方法に革命をもたらした、根本的に新しいアーキテクチャなのです。</p>
+<p>この章では、なぜTransformerがこれほどまでに重要なのか、そしてプログラミング言語実装の経験を持つあなたにとって、なぜこの技術を理解することが重要なのかを探っていきます。</p>
+<h2 id="11-aichatgpt">1.1 現代AIの革命：ChatGPTとその仲間たち<a class="headerlink" href="#11-aichatgpt" title="Permanent link">¶</a></h2>
+<h3 id="ai">プログラマーの日常を変えたAIツール<a class="headerlink" href="#ai" title="Permanent link">¶</a></h3>
+<p>まず、具体的な例から始めましょう。以下は、GitHub Copilotが実際にどのようにコードを補完するかの例です：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="c1"># プログラマーが書いたコメント</span>
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="c1"># フィボナッチ数列を計算する関数を実装</span>
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="c1"># Copilotが生成したコード</span>
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="w">    </span><span class="sd">"""</span>
+<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="sd">    n番目のフィボナッチ数を返す</span>
+<a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a>
+<a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="sd">    Args:</span>
+<a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="sd">        n: 求めたいフィボナッチ数の位置（0以上の整数）</span>
+<a href="#__codelineno-0-11" id="__codelineno-0-11" name="__codelineno-0-11"></a>
+<a href="#__codelineno-0-12" id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    Returns:</span>
+<a href="#__codelineno-0-13" id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">        n番目のフィボナッチ数</span>
+<a href="#__codelineno-0-14" id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    """</span>
+<a href="#__codelineno-0-15" id="__codelineno-0-15" name="__codelineno-0-15"></a>    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+<a href="#__codelineno-0-16" id="__codelineno-0-16" name="__codelineno-0-16"></a>        <span class="k">return</span> <span class="mi">0</span>
+<a href="#__codelineno-0-17" id="__codelineno-0-17" name="__codelineno-0-17"></a>    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a href="#__codelineno-0-18" id="__codelineno-0-18" name="__codelineno-0-18"></a>        <span class="k">return</span> <span class="mi">1</span>
+<a href="#__codelineno-0-19" id="__codelineno-0-19" name="__codelineno-0-19"></a>    <span class="k">else</span><span class="p">:</span>
+<a href="#__codelineno-0-20" id="__codelineno-0-20" name="__codelineno-0-20"></a>        <span class="c1"># メモ化を使った効率的な実装</span>
+<a href="#__codelineno-0-21" id="__codelineno-0-21" name="__codelineno-0-21"></a>        <span class="n">fib_cache</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<a href="#__codelineno-0-22" id="__codelineno-0-22" name="__codelineno-0-22"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<a href="#__codelineno-0-23" id="__codelineno-0-23" name="__codelineno-0-23"></a>            <span class="n">fib_cache</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fib_cache</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">fib_cache</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<a href="#__codelineno-0-24" id="__codelineno-0-24" name="__codelineno-0-24"></a>        <span class="k">return</span> <span class="n">fib_cache</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+</code></pre></div>
+<p>驚くべきことに、Copilotは単に「フィボナッチ数列」という言葉から、以下を理解しています：</p>
+<ol>
+<li><strong>アルゴリズムの選択</strong>: 単純な再帰ではなく、効率的な動的計画法を選択</li>
+<li><strong>エラーハンドリング</strong>: <code>n &lt;= 0</code> のケースを適切に処理</li>
+<li><strong>ドキュメンテーション</strong>: 適切なdocstringを生成</li>
+<li><strong>最適化</strong>: メモ化による効率化を実装</li>
+</ol>
+<p>これはどのようにして可能になったのでしょうか？</p>
+<h3 id="transformer_1">Transformerが支える技術スタック<a class="headerlink" href="#transformer_1" title="Permanent link">¶</a></h3>
+<p>現在のAI革命を支える主要な技術を整理してみましょう：</p>
+<pre class="mermaid"><code>graph TD
+    A[Transformer Architecture] --&gt; B[言語モデル]
+    B --&gt; C[GPT-3/4]
+    B --&gt; D[Claude]
+    B --&gt; E[Gemini]
+    B --&gt; F[LLaMA]
+
+    C --&gt; G[ChatGPT]
+    C --&gt; H[GitHub Copilot]
+
+    A --&gt; I[画像生成モデル]
+    I --&gt; J[DALL-E]
+    I --&gt; K[Stable Diffusion]
+
+    A --&gt; L[マルチモーダルモデル]
+    L --&gt; M[GPT-4V]
+    L --&gt; N[Gemini Vision]</code></pre>
+<p>これらすべてのモデルの基盤となっているのが、2017年に発表された論文「Attention is All You Need」で提案されたTransformerアーキテクチャです。</p>
+<h3 id="_2">実際の影響：開発現場での変化<a class="headerlink" href="#_2" title="Permanent link">¶</a></h3>
+<p>プログラミングの現場で、Transformerベースのツールがもたらした変化を具体的に見てみましょう：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="c1"># 従来の開発フロー</span>
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">traditional_development</span><span class="p">():</span>
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="w">    </span><span class="sd">"""</span>
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a><span class="sd">    1. 要件を理解する</span>
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="sd">    2. アルゴリズムを考える</span>
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a><span class="sd">    3. コードを書く</span>
+<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="sd">    4. デバッグする</span>
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="sd">    5. ドキュメントを書く</span>
+<a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a><span class="sd">    6. テストを書く</span>
+<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a><span class="sd">    7. コードレビューを受ける</span>
+<a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a><span class="sd">    """</span>
+<a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a>    <span class="k">pass</span>
+<a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>
+<a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a><span class="c1"># AI支援による新しい開発フロー</span>
+<a href="#__codelineno-1-15" id="__codelineno-1-15" name="__codelineno-1-15"></a><span class="k">def</span><span class="w"> </span><span class="nf">ai_assisted_development</span><span class="p">():</span>
+<a href="#__codelineno-1-16" id="__codelineno-1-16" name="__codelineno-1-16"></a><span class="w">    </span><span class="sd">"""</span>
+<a href="#__codelineno-1-17" id="__codelineno-1-17" name="__codelineno-1-17"></a><span class="sd">    1. 要件をAIと一緒に整理する</span>
+<a href="#__codelineno-1-18" id="__codelineno-1-18" name="__codelineno-1-18"></a><span class="sd">    2. AIがアルゴリズムの候補を提案</span>
+<a href="#__codelineno-1-19" id="__codelineno-1-19" name="__codelineno-1-19"></a><span class="sd">    3. AIと協力してコードを書く</span>
+<a href="#__codelineno-1-20" id="__codelineno-1-20" name="__codelineno-1-20"></a><span class="sd">    4. AIがバグの可能性を指摘</span>
+<a href="#__codelineno-1-21" id="__codelineno-1-21" name="__codelineno-1-21"></a><span class="sd">    5. AIがドキュメントの下書きを生成</span>
+<a href="#__codelineno-1-22" id="__codelineno-1-22" name="__codelineno-1-22"></a><span class="sd">    6. AIがテストケースを提案</span>
+<a href="#__codelineno-1-23" id="__codelineno-1-23" name="__codelineno-1-23"></a><span class="sd">    7. AIが潜在的な問題点を事前に指摘</span>
+<a href="#__codelineno-1-24" id="__codelineno-1-24" name="__codelineno-1-24"></a><span class="sd">    """</span>
+<a href="#__codelineno-1-25" id="__codelineno-1-25" name="__codelineno-1-25"></a>    <span class="c1"># 実際の使用例</span>
+<a href="#__codelineno-1-26" id="__codelineno-1-26" name="__codelineno-1-26"></a>    <span class="n">prompt</span> <span class="o">=</span> <span class="s2">"""</span>
+<a href="#__codelineno-1-27" id="__codelineno-1-27" name="__codelineno-1-27"></a><span class="s2">    ユーザー入力を検証する関数を実装してください。</span>
+<a href="#__codelineno-1-28" id="__codelineno-1-28" name="__codelineno-1-28"></a><span class="s2">    - メールアドレスの形式をチェック</span>
+<a href="#__codelineno-1-29" id="__codelineno-1-29" name="__codelineno-1-29"></a><span class="s2">    - SQLインジェクション対策</span>
+<a href="#__codelineno-1-30" id="__codelineno-1-30" name="__codelineno-1-30"></a><span class="s2">    - XSS対策</span>
+<a href="#__codelineno-1-31" id="__codelineno-1-31" name="__codelineno-1-31"></a><span class="s2">    """</span>
+<a href="#__codelineno-1-32" id="__codelineno-1-32" name="__codelineno-1-32"></a>
+<a href="#__codelineno-1-33" id="__codelineno-1-33" name="__codelineno-1-33"></a>    <span class="c1"># AIが生成するコード</span>
+<a href="#__codelineno-1-34" id="__codelineno-1-34" name="__codelineno-1-34"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a href="#__codelineno-1-35" id="__codelineno-1-35" name="__codelineno-1-35"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">html</span><span class="w"> </span><span class="kn">import</span> <span class="n">escape</span>
+<a href="#__codelineno-1-36" id="__codelineno-1-36" name="__codelineno-1-36"></a>
+<a href="#__codelineno-1-37" id="__codelineno-1-37" name="__codelineno-1-37"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">validate_user_input</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<a href="#__codelineno-1-38" id="__codelineno-1-38" name="__codelineno-1-38"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-1-39" id="__codelineno-1-39" name="__codelineno-1-39"></a><span class="sd">        ユーザー入力を検証し、安全性を確保する</span>
+<a href="#__codelineno-1-40" id="__codelineno-1-40" name="__codelineno-1-40"></a>
+<a href="#__codelineno-1-41" id="__codelineno-1-41" name="__codelineno-1-41"></a><span class="sd">        Returns:</span>
+<a href="#__codelineno-1-42" id="__codelineno-1-42" name="__codelineno-1-42"></a><span class="sd">            (is_valid, error_message)</span>
+<a href="#__codelineno-1-43" id="__codelineno-1-43" name="__codelineno-1-43"></a><span class="sd">        """</span>
+<a href="#__codelineno-1-44" id="__codelineno-1-44" name="__codelineno-1-44"></a>        <span class="c1"># メールアドレスの検証</span>
+<a href="#__codelineno-1-45" id="__codelineno-1-45" name="__codelineno-1-45"></a>        <span class="n">email_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'</span>
+<a href="#__codelineno-1-46" id="__codelineno-1-46" name="__codelineno-1-46"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">email_pattern</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+<a href="#__codelineno-1-47" id="__codelineno-1-47" name="__codelineno-1-47"></a>            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"無効なメールアドレス形式です"</span>
+<a href="#__codelineno-1-48" id="__codelineno-1-48" name="__codelineno-1-48"></a>
+<a href="#__codelineno-1-49" id="__codelineno-1-49" name="__codelineno-1-49"></a>        <span class="c1"># SQLインジェクション対策：危険な文字のチェック</span>
+<a href="#__codelineno-1-50" id="__codelineno-1-50" name="__codelineno-1-50"></a>        <span class="n">dangerous_patterns</span> <span class="o">=</span> <span class="p">[</span>
+<a href="#__codelineno-1-51" id="__codelineno-1-51" name="__codelineno-1-51"></a>            <span class="sa">r</span><span class="s2">"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER)\b)"</span><span class="p">,</span>
+<a href="#__codelineno-1-52" id="__codelineno-1-52" name="__codelineno-1-52"></a>            <span class="sa">r</span><span class="s2">"(--|#|/\*|\*/)"</span><span class="p">,</span>
+<a href="#__codelineno-1-53" id="__codelineno-1-53" name="__codelineno-1-53"></a>            <span class="sa">r</span><span class="s2">"(;|\||&amp;&amp;)"</span>
+<a href="#__codelineno-1-54" id="__codelineno-1-54" name="__codelineno-1-54"></a>        <span class="p">]</span>
+<a href="#__codelineno-1-55" id="__codelineno-1-55" name="__codelineno-1-55"></a>
+<a href="#__codelineno-1-56" id="__codelineno-1-56" name="__codelineno-1-56"></a>        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">dangerous_patterns</span><span class="p">:</span>
+<a href="#__codelineno-1-57" id="__codelineno-1-57" name="__codelineno-1-57"></a>            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">comment</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+<a href="#__codelineno-1-58" id="__codelineno-1-58" name="__codelineno-1-58"></a>                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"不正な文字が含まれています"</span>
+<a href="#__codelineno-1-59" id="__codelineno-1-59" name="__codelineno-1-59"></a>
+<a href="#__codelineno-1-60" id="__codelineno-1-60" name="__codelineno-1-60"></a>        <span class="c1"># XSS対策：HTMLエスケープ</span>
+<a href="#__codelineno-1-61" id="__codelineno-1-61" name="__codelineno-1-61"></a>        <span class="n">safe_comment</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+<a href="#__codelineno-1-62" id="__codelineno-1-62" name="__codelineno-1-62"></a>
+<a href="#__codelineno-1-63" id="__codelineno-1-63" name="__codelineno-1-63"></a>        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">""</span>
+</code></pre></div>
+<p>このコードは、セキュリティの専門知識を含む複雑な要件を理解し、適切な実装を提供しています。</p>
+<h2 id="12-transformer">1.2 歴史的背景：なぜTransformerが生まれたか<a class="headerlink" href="#12-transformer" title="Permanent link">¶</a></h2>
+<h3 id="rnn">RNNの時代とその限界<a class="headerlink" href="#rnn" title="Permanent link">¶</a></h3>
+<p>Transformerが登場する前、自然言語処理の主流はRNN（Recurrent Neural Network）でした。プログラミング言語の処理に例えると、RNNは次のような問題を抱えていました：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="c1"># RNNの処理イメージ（疑似コード）</span>
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">RNNCompiler</span><span class="p">:</span>
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_code</span><span class="p">):</span>
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">source_code</span><span class="p">)</span>
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>        <span class="n">hidden_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span><span class="p">()</span>
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>        <span class="c1"># 問題1: 逐次処理しかできない</span>
+<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+<a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>            <span class="n">hidden_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">hidden_state</span><span class="p">)</span>
+<a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>            <span class="c1"># 前のトークンの処理が終わるまで次に進めない！</span>
+<a href="#__codelineno-2-11" id="__codelineno-2-11" name="__codelineno-2-11"></a>
+<a href="#__codelineno-2-12" id="__codelineno-2-12" name="__codelineno-2-12"></a>        <span class="k">return</span> <span class="n">hidden_state</span>
+<a href="#__codelineno-2-13" id="__codelineno-2-13" name="__codelineno-2-13"></a>
+<a href="#__codelineno-2-14" id="__codelineno-2-14" name="__codelineno-2-14"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">prev_state</span><span class="p">):</span>
+<a href="#__codelineno-2-15" id="__codelineno-2-15" name="__codelineno-2-15"></a>        <span class="c1"># 問題2: 長い依存関係を保持できない</span>
+<a href="#__codelineno-2-16" id="__codelineno-2-16" name="__codelineno-2-16"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+<a href="#__codelineno-2-17" id="__codelineno-2-17" name="__codelineno-2-17"></a>            <span class="c1"># 古い情報が失われていく（勾配消失）</span>
+<a href="#__codelineno-2-18" id="__codelineno-2-18" name="__codelineno-2-18"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+<a href="#__codelineno-2-19" id="__codelineno-2-19" name="__codelineno-2-19"></a>
+<a href="#__codelineno-2-20" id="__codelineno-2-20" name="__codelineno-2-20"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn_cell</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">prev_state</span><span class="p">)</span>
+</code></pre></div>
+<p>これは、長いプログラムを解析する際に、ファイルの最初で定義された変数を、ファイルの最後で参照できないようなものです。</p>
+<h3 id="rnn_1">RNNの問題を図解<a class="headerlink" href="#rnn_1" title="Permanent link">¶</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>
+<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">visualize_rnn_problems</span><span class="p">():</span>
+<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>    <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>
+<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a>    <span class="c1"># 問題1: 逐次処理の可視化</span>
+<a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a>    <span class="n">sequence_length</span> <span class="o">=</span> <span class="mi">10</span>
+<a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a>    <span class="n">time_steps</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">sequence_length</span><span class="p">)</span>
+<a href="#__codelineno-3-10" id="__codelineno-3-10" name="__codelineno-3-10"></a>
+<a href="#__codelineno-3-11" id="__codelineno-3-11" name="__codelineno-3-11"></a>    <span class="c1"># RNNの処理時間（累積）</span>
+<a href="#__codelineno-3-12" id="__codelineno-3-12" name="__codelineno-3-12"></a>    <span class="n">rnn_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sequence_length</span><span class="p">))</span>
+<a href="#__codelineno-3-13" id="__codelineno-3-13" name="__codelineno-3-13"></a>    <span class="c1"># Transformerの処理時間（並列）</span>
+<a href="#__codelineno-3-14" id="__codelineno-3-14" name="__codelineno-3-14"></a>    <span class="n">transformer_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sequence_length</span><span class="p">)</span>
+<a href="#__codelineno-3-15" id="__codelineno-3-15" name="__codelineno-3-15"></a>
+<a href="#__codelineno-3-16" id="__codelineno-3-16" name="__codelineno-3-16"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">rnn_time</span><span class="p">,</span> <span class="s1">'r-'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'RNN（逐次処理）'</span><span class="p">)</span>
+<a href="#__codelineno-3-17" id="__codelineno-3-17" name="__codelineno-3-17"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">transformer_time</span><span class="p">,</span> <span class="s1">'b-'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'Transformer（並列処理）'</span><span class="p">)</span>
+<a href="#__codelineno-3-18" id="__codelineno-3-18" name="__codelineno-3-18"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'シーケンス位置'</span><span class="p">)</span>
+<a href="#__codelineno-3-19" id="__codelineno-3-19" name="__codelineno-3-19"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'処理時間'</span><span class="p">)</span>
+<a href="#__codelineno-3-20" id="__codelineno-3-20" name="__codelineno-3-20"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'RNN vs Transformer: 処理時間の比較'</span><span class="p">)</span>
+<a href="#__codelineno-3-21" id="__codelineno-3-21" name="__codelineno-3-21"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<a href="#__codelineno-3-22" id="__codelineno-3-22" name="__codelineno-3-22"></a>    <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<a href="#__codelineno-3-23" id="__codelineno-3-23" name="__codelineno-3-23"></a>
+<a href="#__codelineno-3-24" id="__codelineno-3-24" name="__codelineno-3-24"></a>    <span class="c1"># 問題2: 勾配消失の可視化</span>
+<a href="#__codelineno-3-25" id="__codelineno-3-25" name="__codelineno-3-25"></a>    <span class="n">distances</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<a href="#__codelineno-3-26" id="__codelineno-3-26" name="__codelineno-3-26"></a>    <span class="c1"># 距離が離れるほど勾配が小さくなる</span>
+<a href="#__codelineno-3-27" id="__codelineno-3-27" name="__codelineno-3-27"></a>    <span class="n">rnn_gradient</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+<a href="#__codelineno-3-28" id="__codelineno-3-28" name="__codelineno-3-28"></a>    <span class="c1"># Transformerは距離に関係なく一定</span>
+<a href="#__codelineno-3-29" id="__codelineno-3-29" name="__codelineno-3-29"></a>    <span class="n">transformer_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">))</span>
+<a href="#__codelineno-3-30" id="__codelineno-3-30" name="__codelineno-3-30"></a>
+<a href="#__codelineno-3-31" id="__codelineno-3-31" name="__codelineno-3-31"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">rnn_gradient</span><span class="p">,</span> <span class="s1">'r-'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'RNN（勾配消失）'</span><span class="p">)</span>
+<a href="#__codelineno-3-32" id="__codelineno-3-32" name="__codelineno-3-32"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">transformer_gradient</span><span class="p">,</span> <span class="s1">'b-'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'Transformer（一定）'</span><span class="p">)</span>
+<a href="#__codelineno-3-33" id="__codelineno-3-33" name="__codelineno-3-33"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'トークン間の距離'</span><span class="p">)</span>
+<a href="#__codelineno-3-34" id="__codelineno-3-34" name="__codelineno-3-34"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'勾配の強さ（対数スケール）'</span><span class="p">)</span>
+<a href="#__codelineno-3-35" id="__codelineno-3-35" name="__codelineno-3-35"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'長距離依存関係の学習能力'</span><span class="p">)</span>
+<a href="#__codelineno-3-36" id="__codelineno-3-36" name="__codelineno-3-36"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<a href="#__codelineno-3-37" id="__codelineno-3-37" name="__codelineno-3-37"></a>    <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<a href="#__codelineno-3-38" id="__codelineno-3-38" name="__codelineno-3-38"></a>
+<a href="#__codelineno-3-39" id="__codelineno-3-39" name="__codelineno-3-39"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<a href="#__codelineno-3-40" id="__codelineno-3-40" name="__codelineno-3-40"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<a href="#__codelineno-3-41" id="__codelineno-3-41" name="__codelineno-3-41"></a>
+<a href="#__codelineno-3-42" id="__codelineno-3-42" name="__codelineno-3-42"></a><span class="c1"># グラフを表示</span>
+<a href="#__codelineno-3-43" id="__codelineno-3-43" name="__codelineno-3-43"></a><span class="n">visualize_rnn_problems</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="lstmgru">LSTMとGRU：部分的な解決策<a class="headerlink" href="#lstmgru" title="Permanent link">¶</a></h3>
+<p>RNNの問題を解決しようとして、LSTM（Long Short-Term Memory）やGRU（Gated Recurrent Unit）が開発されました：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="c1"># LSTMのゲート機構（概念的な実装）</span>
+<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">LSTMCell</span><span class="p">:</span>
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">):</span>
+<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>        <span class="c1"># 3つのゲート：忘却、入力、出力</span>
+<a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">forget_gate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_gate</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">)</span>
+<a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">input_gate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_gate</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">)</span>
+<a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">output_gate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_gate</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">)</span>
+<a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a>
+<a href="#__codelineno-4-9" id="__codelineno-4-9" name="__codelineno-4-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">prev_hidden</span><span class="p">,</span> <span class="n">prev_cell</span><span class="p">):</span>
+<a href="#__codelineno-4-10" id="__codelineno-4-10" name="__codelineno-4-10"></a>        <span class="c1"># 忘却ゲート：何を忘れるか</span>
+<a href="#__codelineno-4-11" id="__codelineno-4-11" name="__codelineno-4-11"></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forget_gate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prev_hidden</span><span class="p">))</span>
+<a href="#__codelineno-4-12" id="__codelineno-4-12" name="__codelineno-4-12"></a>
+<a href="#__codelineno-4-13" id="__codelineno-4-13" name="__codelineno-4-13"></a>        <span class="c1"># 入力ゲート：何を記憶するか</span>
+<a href="#__codelineno-4-14" id="__codelineno-4-14" name="__codelineno-4-14"></a>        <span class="n">i</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_gate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prev_hidden</span><span class="p">))</span>
+<a href="#__codelineno-4-15" id="__codelineno-4-15" name="__codelineno-4-15"></a>        <span class="n">candidate</span> <span class="o">=</span> <span class="n">tanh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidate_gate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prev_hidden</span><span class="p">))</span>
+<a href="#__codelineno-4-16" id="__codelineno-4-16" name="__codelineno-4-16"></a>
+<a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a>        <span class="c1"># セル状態の更新</span>
+<a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a>        <span class="n">cell</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="n">prev_cell</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">candidate</span>
+<a href="#__codelineno-4-19" id="__codelineno-4-19" name="__codelineno-4-19"></a>
+<a href="#__codelineno-4-20" id="__codelineno-4-20" name="__codelineno-4-20"></a>        <span class="c1"># 出力ゲート：何を出力するか</span>
+<a href="#__codelineno-4-21" id="__codelineno-4-21" name="__codelineno-4-21"></a>        <span class="n">o</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_gate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prev_hidden</span><span class="p">))</span>
+<a href="#__codelineno-4-22" id="__codelineno-4-22" name="__codelineno-4-22"></a>        <span class="n">hidden</span> <span class="o">=</span> <span class="n">o</span> <span class="o">*</span> <span class="n">tanh</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<a href="#__codelineno-4-23" id="__codelineno-4-23" name="__codelineno-4-23"></a>
+<a href="#__codelineno-4-24" id="__codelineno-4-24" name="__codelineno-4-24"></a>        <span class="k">return</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">cell</span>
+</code></pre></div>
+<p>しかし、これらも根本的な問題は解決できませんでした：
+- <strong>依然として逐次処理</strong>: 並列化できない
+- <strong>計算の複雑さ</strong>: ゲート機構による計算コスト増大
+- <strong>長距離依存の限界</strong>: 改善はされたが、完全ではない</p>
+<h3 id="attention-is-all-you-need">Attention is All You Need: パラダイムシフト<a class="headerlink" href="#attention-is-all-you-need" title="Permanent link">¶</a></h3>
+<p>2017年、Googleの研究者たちは革命的なアイデアを提案しました：</p>
+<blockquote>
+<p>「RNNを完全に排除し、Attention機構だけで言語を処理できるのではないか？」</p>
+</blockquote>
+<p>これは、コンパイラの設計に例えると、次のような発想の転換でした：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="c1"># 従来のコンパイラ設計</span>
+<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">TraditionalCompiler</span><span class="p">:</span>
+<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+<a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>        <span class="c1"># 段階的に処理（パイプライン）</span>
+<a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lexer</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>          <span class="c1"># 字句解析</span>
+<a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>        <span class="n">ast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>            <span class="c1"># 構文解析</span>
+<a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a>        <span class="n">typed_ast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_checker</span><span class="p">(</span><span class="n">ast</span><span class="p">)</span>   <span class="c1"># 型検査</span>
+<a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a>        <span class="n">ir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ir_generator</span><span class="p">(</span><span class="n">typed_ast</span><span class="p">)</span>    <span class="c1"># 中間表現生成</span>
+<a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a>        <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_generator</span><span class="p">(</span><span class="n">ir</span><span class="p">)</span>       <span class="c1"># コード生成</span>
+<a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a>        <span class="k">return</span> <span class="n">code</span>
+<a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a>
+<a href="#__codelineno-5-12" id="__codelineno-5-12" name="__codelineno-5-12"></a><span class="c1"># Transformerの発想</span>
+<a href="#__codelineno-5-13" id="__codelineno-5-13" name="__codelineno-5-13"></a><span class="k">class</span><span class="w"> </span><span class="nc">TransformerCompiler</span><span class="p">:</span>
+<a href="#__codelineno-5-14" id="__codelineno-5-14" name="__codelineno-5-14"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+<a href="#__codelineno-5-15" id="__codelineno-5-15" name="__codelineno-5-15"></a>        <span class="c1"># すべての情報を同時に考慮</span>
+<a href="#__codelineno-5-16" id="__codelineno-5-16" name="__codelineno-5-16"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+<a href="#__codelineno-5-17" id="__codelineno-5-17" name="__codelineno-5-17"></a>
+<a href="#__codelineno-5-18" id="__codelineno-5-18" name="__codelineno-5-18"></a>        <span class="c1"># 各トークンが他のすべてのトークンと直接対話</span>
+<a href="#__codelineno-5-19" id="__codelineno-5-19" name="__codelineno-5-19"></a>        <span class="n">attention_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_attention</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span>
+<a href="#__codelineno-5-20" id="__codelineno-5-20" name="__codelineno-5-20"></a>
+<a href="#__codelineno-5-21" id="__codelineno-5-21" name="__codelineno-5-21"></a>        <span class="c1"># 並列処理で一度に解析</span>
+<a href="#__codelineno-5-22" id="__codelineno-5-22" name="__codelineno-5-22"></a>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel_process</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">attention_matrix</span><span class="p">)</span>
+<a href="#__codelineno-5-23" id="__codelineno-5-23" name="__codelineno-5-23"></a>        <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+<h3 id="transformer_2">Transformerの革新性<a class="headerlink" href="#transformer_2" title="Permanent link">¶</a></h3>
+<p>Transformerが持つ革新的な特徴を整理すると：</p>
+<ol>
+<li>
+<p><strong>完全な並列処理</strong>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="c1"># RNN: O(n) の時間計算量</span>
+<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">)):</span>
+<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>    <span class="n">hidden</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">hidden</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>
+<a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="c1"># Transformer: O(1) の時間計算量（並列化時）</span>
+<a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="n">attention</span> <span class="o">=</span> <span class="n">compute_all_pairs</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">sequence</span><span class="p">)</span>  <span class="c1"># 全ペアを一度に計算</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>長距離依存の直接モデリング</strong>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="c1"># 任意の距離のトークン間で直接情報交換</span>
+<a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">attention</span><span class="p">(</span><span class="n">query_pos</span><span class="p">,</span> <span class="n">key_pos</span><span class="p">):</span>
+<a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a>    <span class="c1"># 位置に関係なく、関連性があれば高い注意を払う</span>
+<a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a>    <span class="k">return</span> <span class="n">similarity</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">query_pos</span><span class="p">],</span> <span class="n">tokens</span><span class="p">[</span><span class="n">key_pos</span><span class="p">])</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>計算効率とスケーラビリティ</strong>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="c1"># GPUでの効率的な行列演算</span>
+<a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="n">Q</span> <span class="o">=</span> <span class="n">linear_transform</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>  <span class="c1"># Query</span>
+<a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="n">K</span> <span class="o">=</span> <span class="n">linear_transform</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>  <span class="c1"># Key</span>
+<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a><span class="n">V</span> <span class="o">=</span> <span class="n">linear_transform</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>  <span class="c1"># Value</span>
+<a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a>
+<a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="c1"># 一度の行列演算ですべての注意を計算</span>
+<a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="n">attention_scores</span> <span class="o">=</span> <span class="n">matmul</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">K</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">d_k</span><span class="p">)</span>
+<a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="n">attention_weights</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">attention_scores</span><span class="p">)</span>
+<a href="#__codelineno-8-9" id="__codelineno-8-9" name="__codelineno-8-9"></a><span class="n">output</span> <span class="o">=</span> <span class="n">matmul</span><span class="p">(</span><span class="n">attention_weights</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h2 id="13">1.3 プログラミング言語処理への深い関連<a class="headerlink" href="#13" title="Permanent link">¶</a></h2>
+<h3 id="_3">コード理解・生成への応用<a class="headerlink" href="#_3" title="Permanent link">¶</a></h3>
+<p>Transformerがプログラミング言語処理に革命をもたらした理由を、具体例で見てみましょう：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="c1"># 例：Transformerによるコード補完</span>
+<a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">CodeTransformer</span><span class="p">:</span>
+<a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">context_window</span> <span class="o">=</span> <span class="mi">2048</span>  <span class="c1"># トークン数</span>
+<a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a>
+<a href="#__codelineno-9-6" id="__codelineno-9-6" name="__codelineno-9-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">analyze_code_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partial_code</span><span class="p">):</span>
+<a href="#__codelineno-9-7" id="__codelineno-9-7" name="__codelineno-9-7"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-9-8" id="__codelineno-9-8" name="__codelineno-9-8"></a><span class="sd">        コードの文脈を理解し、次に来るべきコードを予測</span>
+<a href="#__codelineno-9-9" id="__codelineno-9-9" name="__codelineno-9-9"></a><span class="sd">        """</span>
+<a href="#__codelineno-9-10" id="__codelineno-9-10" name="__codelineno-9-10"></a>        <span class="c1"># 1. 変数のスコープを理解</span>
+<a href="#__codelineno-9-11" id="__codelineno-9-11" name="__codelineno-9-11"></a>        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_variables</span><span class="p">(</span><span class="n">partial_code</span><span class="p">)</span>
+<a href="#__codelineno-9-12" id="__codelineno-9-12" name="__codelineno-9-12"></a>
+<a href="#__codelineno-9-13" id="__codelineno-9-13" name="__codelineno-9-13"></a>        <span class="c1"># 2. 関数のシグネチャを理解</span>
+<a href="#__codelineno-9-14" id="__codelineno-9-14" name="__codelineno-9-14"></a>        <span class="n">functions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_functions</span><span class="p">(</span><span class="n">partial_code</span><span class="p">)</span>
+<a href="#__codelineno-9-15" id="__codelineno-9-15" name="__codelineno-9-15"></a>
+<a href="#__codelineno-9-16" id="__codelineno-9-16" name="__codelineno-9-16"></a>        <span class="c1"># 3. インポートされたモジュールを理解</span>
+<a href="#__codelineno-9-17" id="__codelineno-9-17" name="__codelineno-9-17"></a>        <span class="n">imports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_imports</span><span class="p">(</span><span class="n">partial_code</span><span class="p">)</span>
+<a href="#__codelineno-9-18" id="__codelineno-9-18" name="__codelineno-9-18"></a>
+<a href="#__codelineno-9-19" id="__codelineno-9-19" name="__codelineno-9-19"></a>        <span class="c1"># 4. コーディングスタイルを学習</span>
+<a href="#__codelineno-9-20" id="__codelineno-9-20" name="__codelineno-9-20"></a>        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_style</span><span class="p">(</span><span class="n">partial_code</span><span class="p">)</span>
+<a href="#__codelineno-9-21" id="__codelineno-9-21" name="__codelineno-9-21"></a>
+<a href="#__codelineno-9-22" id="__codelineno-9-22" name="__codelineno-9-22"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_next_tokens</span><span class="p">(</span>
+<a href="#__codelineno-9-23" id="__codelineno-9-23" name="__codelineno-9-23"></a>            <span class="n">partial_code</span><span class="p">,</span> 
+<a href="#__codelineno-9-24" id="__codelineno-9-24" name="__codelineno-9-24"></a>            <span class="n">context</span><span class="o">=</span><span class="p">{</span>
+<a href="#__codelineno-9-25" id="__codelineno-9-25" name="__codelineno-9-25"></a>                <span class="s1">'variables'</span><span class="p">:</span> <span class="n">variables</span><span class="p">,</span>
+<a href="#__codelineno-9-26" id="__codelineno-9-26" name="__codelineno-9-26"></a>                <span class="s1">'functions'</span><span class="p">:</span> <span class="n">functions</span><span class="p">,</span>
+<a href="#__codelineno-9-27" id="__codelineno-9-27" name="__codelineno-9-27"></a>                <span class="s1">'imports'</span><span class="p">:</span> <span class="n">imports</span><span class="p">,</span>
+<a href="#__codelineno-9-28" id="__codelineno-9-28" name="__codelineno-9-28"></a>                <span class="s1">'style'</span><span class="p">:</span> <span class="n">style</span>
+<a href="#__codelineno-9-29" id="__codelineno-9-29" name="__codelineno-9-29"></a>            <span class="p">}</span>
+<a href="#__codelineno-9-30" id="__codelineno-9-30" name="__codelineno-9-30"></a>        <span class="p">)</span>
+<a href="#__codelineno-9-31" id="__codelineno-9-31" name="__codelineno-9-31"></a>
+<a href="#__codelineno-9-32" id="__codelineno-9-32" name="__codelineno-9-32"></a><span class="c1"># 実際の使用例</span>
+<a href="#__codelineno-9-33" id="__codelineno-9-33" name="__codelineno-9-33"></a><span class="n">code_so_far</span> <span class="o">=</span> <span class="s1">'''</span>
+<a href="#__codelineno-9-34" id="__codelineno-9-34" name="__codelineno-9-34"></a><span class="s1">import numpy as np</span>
+<a href="#__codelineno-9-35" id="__codelineno-9-35" name="__codelineno-9-35"></a><span class="s1">import matplotlib.pyplot as plt</span>
+<a href="#__codelineno-9-36" id="__codelineno-9-36" name="__codelineno-9-36"></a>
+<a href="#__codelineno-9-37" id="__codelineno-9-37" name="__codelineno-9-37"></a><span class="s1">def plot_training_history(history):</span>
+<a href="#__codelineno-9-38" id="__codelineno-9-38" name="__codelineno-9-38"></a><span class="s1">    """</span>
+<a href="#__codelineno-9-39" id="__codelineno-9-39" name="__codelineno-9-39"></a><span class="s1">    訓練履歴をプロットする関数</span>
+<a href="#__codelineno-9-40" id="__codelineno-9-40" name="__codelineno-9-40"></a><span class="s1">    """</span>
+<a href="#__codelineno-9-41" id="__codelineno-9-41" name="__codelineno-9-41"></a><span class="s1">    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))</span>
+<a href="#__codelineno-9-42" id="__codelineno-9-42" name="__codelineno-9-42"></a>
+<a href="#__codelineno-9-43" id="__codelineno-9-43" name="__codelineno-9-43"></a><span class="s1">    # 損失のプロット</span>
+<a href="#__codelineno-9-44" id="__codelineno-9-44" name="__codelineno-9-44"></a><span class="s1">    ax1.plot(history['train_loss'], label='Train')</span>
+<a href="#__codelineno-9-45" id="__codelineno-9-45" name="__codelineno-9-45"></a><span class="s1">    ax1.plot(history['val_loss'], label='Validation')</span>
+<a href="#__codelineno-9-46" id="__codelineno-9-46" name="__codelineno-9-46"></a><span class="s1">    ax1.set_title('Model Loss')</span>
+<a href="#__codelineno-9-47" id="__codelineno-9-47" name="__codelineno-9-47"></a><span class="s1">    ax1.set_xlabel('Epoch')</span>
+<a href="#__codelineno-9-48" id="__codelineno-9-48" name="__codelineno-9-48"></a><span class="s1">    ax1.set_ylabel('Loss')</span>
+<a href="#__codelineno-9-49" id="__codelineno-9-49" name="__codelineno-9-49"></a><span class="s1">    ax1.legend()</span>
+<a href="#__codelineno-9-50" id="__codelineno-9-50" name="__codelineno-9-50"></a>
+<a href="#__codelineno-9-51" id="__codelineno-9-51" name="__codelineno-9-51"></a><span class="s1">    # ここで精度をプロットしたい</span>
+<a href="#__codelineno-9-52" id="__codelineno-9-52" name="__codelineno-9-52"></a><span class="s1">'''</span>
+<a href="#__codelineno-9-53" id="__codelineno-9-53" name="__codelineno-9-53"></a>
+<a href="#__codelineno-9-54" id="__codelineno-9-54" name="__codelineno-9-54"></a><span class="c1"># Transformerが生成するコード</span>
+<a href="#__codelineno-9-55" id="__codelineno-9-55" name="__codelineno-9-55"></a><span class="n">suggested_code</span> <span class="o">=</span> <span class="s1">'''</span>
+<a href="#__codelineno-9-56" id="__codelineno-9-56" name="__codelineno-9-56"></a><span class="s1">    # 精度のプロット</span>
+<a href="#__codelineno-9-57" id="__codelineno-9-57" name="__codelineno-9-57"></a><span class="s1">    ax2.plot(history['train_acc'], label='Train')</span>
+<a href="#__codelineno-9-58" id="__codelineno-9-58" name="__codelineno-9-58"></a><span class="s1">    ax2.plot(history['val_acc'], label='Validation')</span>
+<a href="#__codelineno-9-59" id="__codelineno-9-59" name="__codelineno-9-59"></a><span class="s1">    ax2.set_title('Model Accuracy')</span>
+<a href="#__codelineno-9-60" id="__codelineno-9-60" name="__codelineno-9-60"></a><span class="s1">    ax2.set_xlabel('Epoch')</span>
+<a href="#__codelineno-9-61" id="__codelineno-9-61" name="__codelineno-9-61"></a><span class="s1">    ax2.set_ylabel('Accuracy')</span>
+<a href="#__codelineno-9-62" id="__codelineno-9-62" name="__codelineno-9-62"></a><span class="s1">    ax2.legend()</span>
+<a href="#__codelineno-9-63" id="__codelineno-9-63" name="__codelineno-9-63"></a>
+<a href="#__codelineno-9-64" id="__codelineno-9-64" name="__codelineno-9-64"></a><span class="s1">    plt.tight_layout()</span>
+<a href="#__codelineno-9-65" id="__codelineno-9-65" name="__codelineno-9-65"></a><span class="s1">    plt.show()</span>
+<a href="#__codelineno-9-66" id="__codelineno-9-66" name="__codelineno-9-66"></a><span class="s1">'''</span>
+</code></pre></div>
+<p>Transformerは以下を理解しています：
+- <code>ax1</code>の次は<code>ax2</code>を使うべき
+- 損失（loss）の次は精度（accuracy）をプロットする慣習
+- <code>plt.tight_layout()</code>と<code>plt.show()</code>で締めくくる
+- 一貫したコーディングスタイルを維持</p>
+<h3 id="_4">プログラム解析への応用<a class="headerlink" href="#_4" title="Permanent link">¶</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="c1"># バグ検出の例</span>
+<a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">transformer_bug_detector</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+<a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a><span class="w">    </span><span class="sd">"""</span>
+<a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a><span class="sd">    Transformerを使ったバグ検出</span>
+<a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a><span class="sd">    """</span>
+<a href="#__codelineno-10-6" id="__codelineno-10-6" name="__codelineno-10-6"></a>    <span class="c1"># 潜在的なバグパターンを学習済み</span>
+<a href="#__codelineno-10-7" id="__codelineno-10-7" name="__codelineno-10-7"></a>    <span class="n">bug_patterns</span> <span class="o">=</span> <span class="p">{</span>
+<a href="#__codelineno-10-8" id="__codelineno-10-8" name="__codelineno-10-8"></a>        <span class="s1">'null_pointer'</span><span class="p">:</span> <span class="s1">'オブジェクトがNoneの可能性'</span><span class="p">,</span>
+<a href="#__codelineno-10-9" id="__codelineno-10-9" name="__codelineno-10-9"></a>        <span class="s1">'index_error'</span><span class="p">:</span> <span class="s1">'インデックスが範囲外の可能性'</span><span class="p">,</span>
+<a href="#__codelineno-10-10" id="__codelineno-10-10" name="__codelineno-10-10"></a>        <span class="s1">'type_error'</span><span class="p">:</span> <span class="s1">'型の不一致'</span><span class="p">,</span>
+<a href="#__codelineno-10-11" id="__codelineno-10-11" name="__codelineno-10-11"></a>        <span class="s1">'resource_leak'</span><span class="p">:</span> <span class="s1">'リソースの解放忘れ'</span><span class="p">,</span>
+<a href="#__codelineno-10-12" id="__codelineno-10-12" name="__codelineno-10-12"></a>        <span class="s1">'race_condition'</span><span class="p">:</span> <span class="s1">'並行処理の競合状態'</span>
+<a href="#__codelineno-10-13" id="__codelineno-10-13" name="__codelineno-10-13"></a>    <span class="p">}</span>
+<a href="#__codelineno-10-14" id="__codelineno-10-14" name="__codelineno-10-14"></a>
+<a href="#__codelineno-10-15" id="__codelineno-10-15" name="__codelineno-10-15"></a>    <span class="c1"># 実際のコード例</span>
+<a href="#__codelineno-10-16" id="__codelineno-10-16" name="__codelineno-10-16"></a>    <span class="n">suspicious_code</span> <span class="o">=</span> <span class="s1">'''</span>
+<a href="#__codelineno-10-17" id="__codelineno-10-17" name="__codelineno-10-17"></a><span class="s1">    def process_data(data_list):</span>
+<a href="#__codelineno-10-18" id="__codelineno-10-18" name="__codelineno-10-18"></a><span class="s1">        result = []</span>
+<a href="#__codelineno-10-19" id="__codelineno-10-19" name="__codelineno-10-19"></a><span class="s1">        for i in range(len(data_list) + 1):  # バグ: 範囲が1つ多い</span>
+<a href="#__codelineno-10-20" id="__codelineno-10-20" name="__codelineno-10-20"></a><span class="s1">            item = data_list[i]</span>
+<a href="#__codelineno-10-21" id="__codelineno-10-21" name="__codelineno-10-21"></a><span class="s1">            if item &gt; 0:</span>
+<a href="#__codelineno-10-22" id="__codelineno-10-22" name="__codelineno-10-22"></a><span class="s1">                result.append(item * 2)</span>
+<a href="#__codelineno-10-23" id="__codelineno-10-23" name="__codelineno-10-23"></a><span class="s1">        return result</span>
+<a href="#__codelineno-10-24" id="__codelineno-10-24" name="__codelineno-10-24"></a><span class="s1">    '''</span>
+<a href="#__codelineno-10-25" id="__codelineno-10-25" name="__codelineno-10-25"></a>
+<a href="#__codelineno-10-26" id="__codelineno-10-26" name="__codelineno-10-26"></a>    <span class="c1"># Transformerの分析結果</span>
+<a href="#__codelineno-10-27" id="__codelineno-10-27" name="__codelineno-10-27"></a>    <span class="n">detected_issues</span> <span class="o">=</span> <span class="p">[</span>
+<a href="#__codelineno-10-28" id="__codelineno-10-28" name="__codelineno-10-28"></a>        <span class="p">{</span>
+<a href="#__codelineno-10-29" id="__codelineno-10-29" name="__codelineno-10-29"></a>            <span class="s1">'line'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<a href="#__codelineno-10-30" id="__codelineno-10-30" name="__codelineno-10-30"></a>            <span class="s1">'type'</span><span class="p">:</span> <span class="s1">'index_error'</span><span class="p">,</span>
+<a href="#__codelineno-10-31" id="__codelineno-10-31" name="__codelineno-10-31"></a>            <span class="s1">'message'</span><span class="p">:</span> <span class="s1">'ループの範囲が配列のサイズを超えています。`len(data_list)`を使用してください。'</span><span class="p">,</span>
+<a href="#__codelineno-10-32" id="__codelineno-10-32" name="__codelineno-10-32"></a>            <span class="s1">'severity'</span><span class="p">:</span> <span class="s1">'high'</span><span class="p">,</span>
+<a href="#__codelineno-10-33" id="__codelineno-10-33" name="__codelineno-10-33"></a>            <span class="s1">'fix'</span><span class="p">:</span> <span class="s1">'for i in range(len(data_list)):'</span>
+<a href="#__codelineno-10-34" id="__codelineno-10-34" name="__codelineno-10-34"></a>        <span class="p">}</span>
+<a href="#__codelineno-10-35" id="__codelineno-10-35" name="__codelineno-10-35"></a>    <span class="p">]</span>
+<a href="#__codelineno-10-36" id="__codelineno-10-36" name="__codelineno-10-36"></a>
+<a href="#__codelineno-10-37" id="__codelineno-10-37" name="__codelineno-10-37"></a>    <span class="k">return</span> <span class="n">detected_issues</span>
+</code></pre></div>
+<h3 id="_5">コンパイラ技術との接点<a class="headerlink" href="#_5" title="Permanent link">¶</a></h3>
+<p>Transformerの概念は、実はコンパイラ技術と多くの共通点があります：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="c1"># シンボルテーブルとAttention機構の類似性</span>
+<a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">SymbolTableVsAttention</span><span class="p">:</span>
+<a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compiler_symbol_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a><span class="sd">        コンパイラのシンボル解決</span>
+<a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a><span class="sd">        """</span>
+<a href="#__codelineno-11-7" id="__codelineno-11-7" name="__codelineno-11-7"></a>        <span class="n">symbol_table</span> <span class="o">=</span> <span class="p">{</span>
+<a href="#__codelineno-11-8" id="__codelineno-11-8" name="__codelineno-11-8"></a>            <span class="s1">'global'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'MAX_SIZE'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">'DEBUG'</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+<a href="#__codelineno-11-9" id="__codelineno-11-9" name="__codelineno-11-9"></a>            <span class="s1">'function_foo'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="s1">'int'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">:</span> <span class="s1">'string'</span><span class="p">},</span>
+<a href="#__codelineno-11-10" id="__codelineno-11-10" name="__codelineno-11-10"></a>            <span class="s1">'function_bar'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'z'</span><span class="p">:</span> <span class="s1">'float'</span><span class="p">}</span>
+<a href="#__codelineno-11-11" id="__codelineno-11-11" name="__codelineno-11-11"></a>        <span class="p">}</span>
+<a href="#__codelineno-11-12" id="__codelineno-11-12" name="__codelineno-11-12"></a>
+<a href="#__codelineno-11-13" id="__codelineno-11-13" name="__codelineno-11-13"></a>        <span class="c1"># 変数参照の解決</span>
+<a href="#__codelineno-11-14" id="__codelineno-11-14" name="__codelineno-11-14"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">scope</span><span class="p">):</span>
+<a href="#__codelineno-11-15" id="__codelineno-11-15" name="__codelineno-11-15"></a>            <span class="c1"># 内側のスコープから外側へ探索</span>
+<a href="#__codelineno-11-16" id="__codelineno-11-16" name="__codelineno-11-16"></a>            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">symbol_table</span><span class="p">[</span><span class="n">scope</span><span class="p">]:</span>
+<a href="#__codelineno-11-17" id="__codelineno-11-17" name="__codelineno-11-17"></a>                <span class="k">return</span> <span class="n">symbol_table</span><span class="p">[</span><span class="n">scope</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+<a href="#__codelineno-11-18" id="__codelineno-11-18" name="__codelineno-11-18"></a>            <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">symbol_table</span><span class="p">[</span><span class="s1">'global'</span><span class="p">]:</span>
+<a href="#__codelineno-11-19" id="__codelineno-11-19" name="__codelineno-11-19"></a>                <span class="k">return</span> <span class="n">symbol_table</span><span class="p">[</span><span class="s1">'global'</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+<a href="#__codelineno-11-20" id="__codelineno-11-20" name="__codelineno-11-20"></a>            <span class="k">else</span><span class="p">:</span>
+<a href="#__codelineno-11-21" id="__codelineno-11-21" name="__codelineno-11-21"></a>                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' is not defined"</span><span class="p">)</span>
+<a href="#__codelineno-11-22" id="__codelineno-11-22" name="__codelineno-11-22"></a>
+<a href="#__codelineno-11-23" id="__codelineno-11-23" name="__codelineno-11-23"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">transformer_attention</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-11-24" id="__codelineno-11-24" name="__codelineno-11-24"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-11-25" id="__codelineno-11-25" name="__codelineno-11-25"></a><span class="sd">        TransformerのAttention機構</span>
+<a href="#__codelineno-11-26" id="__codelineno-11-26" name="__codelineno-11-26"></a><span class="sd">        """</span>
+<a href="#__codelineno-11-27" id="__codelineno-11-27" name="__codelineno-11-27"></a>        <span class="c1"># すべてのトークンが他のすべてのトークンを「見る」</span>
+<a href="#__codelineno-11-28" id="__codelineno-11-28" name="__codelineno-11-28"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">attention_mechanism</span><span class="p">(</span><span class="n">query_token</span><span class="p">,</span> <span class="n">all_tokens</span><span class="p">):</span>
+<a href="#__codelineno-11-29" id="__codelineno-11-29" name="__codelineno-11-29"></a>            <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+<a href="#__codelineno-11-30" id="__codelineno-11-30" name="__codelineno-11-30"></a>            <span class="k">for</span> <span class="n">key_token</span> <span class="ow">in</span> <span class="n">all_tokens</span><span class="p">:</span>
+<a href="#__codelineno-11-31" id="__codelineno-11-31" name="__codelineno-11-31"></a>                <span class="c1"># トークン間の関連性を計算</span>
+<a href="#__codelineno-11-32" id="__codelineno-11-32" name="__codelineno-11-32"></a>                <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_relevance</span><span class="p">(</span><span class="n">query_token</span><span class="p">,</span> <span class="n">key_token</span><span class="p">)</span>
+<a href="#__codelineno-11-33" id="__codelineno-11-33" name="__codelineno-11-33"></a>                <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+<a href="#__codelineno-11-34" id="__codelineno-11-34" name="__codelineno-11-34"></a>
+<a href="#__codelineno-11-35" id="__codelineno-11-35" name="__codelineno-11-35"></a>            <span class="c1"># 関連性の高いトークンに注目</span>
+<a href="#__codelineno-11-36" id="__codelineno-11-36" name="__codelineno-11-36"></a>            <span class="n">attention_weights</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+<a href="#__codelineno-11-37" id="__codelineno-11-37" name="__codelineno-11-37"></a>
+<a href="#__codelineno-11-38" id="__codelineno-11-38" name="__codelineno-11-38"></a>            <span class="c1"># 重み付き和で情報を集約</span>
+<a href="#__codelineno-11-39" id="__codelineno-11-39" name="__codelineno-11-39"></a>            <span class="n">context</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="n">token</span> <span class="k">for</span> <span class="n">weight</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">attention_weights</span><span class="p">,</span> <span class="n">all_tokens</span><span class="p">))</span>
+<a href="#__codelineno-11-40" id="__codelineno-11-40" name="__codelineno-11-40"></a>            <span class="k">return</span> <span class="n">context</span>
+</code></pre></div>
+<p>両者の類似点：
+1. <strong>文脈依存の解決</strong>: 変数のスコープ vs トークンの文脈
+2. <strong>長距離の参照</strong>: グローバル変数 vs 離れたトークン
+3. <strong>階層的な処理</strong>: ネストしたスコープ vs Multi-head Attention</p>
+<h3 id="_6">最適化技術の共通性<a class="headerlink" href="#_6" title="Permanent link">¶</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="c1"># コンパイラ最適化とモデル最適化の対比</span>
+<a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">OptimizationParallels</span><span class="p">:</span>
+<a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compiler_optimization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-12-4" id="__codelineno-12-4" name="__codelineno-12-4"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-12-5" id="__codelineno-12-5" name="__codelineno-12-5"></a><span class="sd">        コンパイラの最適化技術</span>
+<a href="#__codelineno-12-6" id="__codelineno-12-6" name="__codelineno-12-6"></a><span class="sd">        """</span>
+<a href="#__codelineno-12-7" id="__codelineno-12-7" name="__codelineno-12-7"></a>        <span class="c1"># 定数畳み込み</span>
+<a href="#__codelineno-12-8" id="__codelineno-12-8" name="__codelineno-12-8"></a>        <span class="c1"># Before: x = 2 * 3 * 4</span>
+<a href="#__codelineno-12-9" id="__codelineno-12-9" name="__codelineno-12-9"></a>        <span class="c1"># After:  x = 24</span>
+<a href="#__codelineno-12-10" id="__codelineno-12-10" name="__codelineno-12-10"></a>
+<a href="#__codelineno-12-11" id="__codelineno-12-11" name="__codelineno-12-11"></a>        <span class="c1"># ループ展開</span>
+<a href="#__codelineno-12-12" id="__codelineno-12-12" name="__codelineno-12-12"></a>        <span class="c1"># Before: for i in range(4): sum += arr[i]</span>
+<a href="#__codelineno-12-13" id="__codelineno-12-13" name="__codelineno-12-13"></a>        <span class="c1"># After:  sum += arr[0] + arr[1] + arr[2] + arr[3]</span>
+<a href="#__codelineno-12-14" id="__codelineno-12-14" name="__codelineno-12-14"></a>
+<a href="#__codelineno-12-15" id="__codelineno-12-15" name="__codelineno-12-15"></a>        <span class="c1"># デッドコード除去</span>
+<a href="#__codelineno-12-16" id="__codelineno-12-16" name="__codelineno-12-16"></a>        <span class="c1"># Before: if False: expensive_function()</span>
+<a href="#__codelineno-12-17" id="__codelineno-12-17" name="__codelineno-12-17"></a>        <span class="c1"># After:  # removed</span>
+<a href="#__codelineno-12-18" id="__codelineno-12-18" name="__codelineno-12-18"></a>
+<a href="#__codelineno-12-19" id="__codelineno-12-19" name="__codelineno-12-19"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">transformer_optimization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-12-20" id="__codelineno-12-20" name="__codelineno-12-20"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-12-21" id="__codelineno-12-21" name="__codelineno-12-21"></a><span class="sd">        Transformerの最適化技術</span>
+<a href="#__codelineno-12-22" id="__codelineno-12-22" name="__codelineno-12-22"></a><span class="sd">        """</span>
+<a href="#__codelineno-12-23" id="__codelineno-12-23" name="__codelineno-12-23"></a>        <span class="c1"># アテンション行列の効率化</span>
+<a href="#__codelineno-12-24" id="__codelineno-12-24" name="__codelineno-12-24"></a>        <span class="c1"># Flash Attention: O(n²) → O(n)のメモリ使用量</span>
+<a href="#__codelineno-12-25" id="__codelineno-12-25" name="__codelineno-12-25"></a>
+<a href="#__codelineno-12-26" id="__codelineno-12-26" name="__codelineno-12-26"></a>        <span class="c1"># 量子化</span>
+<a href="#__codelineno-12-27" id="__codelineno-12-27" name="__codelineno-12-27"></a>        <span class="c1"># 32bit浮動小数点 → 8bit整数</span>
+<a href="#__codelineno-12-28" id="__codelineno-12-28" name="__codelineno-12-28"></a>
+<a href="#__codelineno-12-29" id="__codelineno-12-29" name="__codelineno-12-29"></a>        <span class="c1"># プルーニング</span>
+<a href="#__codelineno-12-30" id="__codelineno-12-30" name="__codelineno-12-30"></a>        <span class="c1"># 重要でない接続を削除</span>
+<a href="#__codelineno-12-31" id="__codelineno-12-31" name="__codelineno-12-31"></a>
+<a href="#__codelineno-12-32" id="__codelineno-12-32" name="__codelineno-12-32"></a>        <span class="c1"># 知識蒸留</span>
+<a href="#__codelineno-12-33" id="__codelineno-12-33" name="__codelineno-12-33"></a>        <span class="c1"># 大きなモデルから小さなモデルへ知識を転移</span>
+</code></pre></div>
+<h2 id="14">1.4 本書で学ぶこと：理論と実装の融合<a class="headerlink" href="#14" title="Permanent link">¶</a></h2>
+<h3 id="_7">学習のロードマップ<a class="headerlink" href="#_7" title="Permanent link">¶</a></h3>
+<p>本書では、以下の順序でTransformerを完全に理解していきます：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-13-1" id="__codelineno-13-1" name="__codelineno-13-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">TransformerLearningPath</span><span class="p">:</span>
+<a href="#__codelineno-13-2" id="__codelineno-13-2" name="__codelineno-13-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-13-3" id="__codelineno-13-3" name="__codelineno-13-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">chapters</span> <span class="o">=</span> <span class="p">{</span>
+<a href="#__codelineno-13-4" id="__codelineno-13-4" name="__codelineno-13-4"></a>            <span class="s2">"基礎"</span><span class="p">:</span> <span class="p">{</span>
+<a href="#__codelineno-13-5" id="__codelineno-13-5" name="__codelineno-13-5"></a>                <span class="s2">"数学"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"線形代数"</span><span class="p">,</span> <span class="s2">"確率統計"</span><span class="p">,</span> <span class="s2">"微分"</span><span class="p">],</span>
+<a href="#__codelineno-13-6" id="__codelineno-13-6" name="__codelineno-13-6"></a>                <span class="s2">"PyTorch"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"テンソル"</span><span class="p">,</span> <span class="s2">"自動微分"</span><span class="p">,</span> <span class="s2">"NN構築"</span><span class="p">]</span>
+<a href="#__codelineno-13-7" id="__codelineno-13-7" name="__codelineno-13-7"></a>            <span class="p">},</span>
+<a href="#__codelineno-13-8" id="__codelineno-13-8" name="__codelineno-13-8"></a>            <span class="s2">"コア概念"</span><span class="p">:</span> <span class="p">{</span>
+<a href="#__codelineno-13-9" id="__codelineno-13-9" name="__codelineno-13-9"></a>                <span class="s2">"Attention"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"内積注意"</span><span class="p">,</span> <span class="s2">"スケーリング"</span><span class="p">,</span> <span class="s2">"マスキング"</span><span class="p">],</span>
+<a href="#__codelineno-13-10" id="__codelineno-13-10" name="__codelineno-13-10"></a>                <span class="s2">"位置エンコーディング"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"絶対位置"</span><span class="p">,</span> <span class="s2">"相対位置"</span><span class="p">,</span> <span class="s2">"RoPE"</span><span class="p">],</span>
+<a href="#__codelineno-13-11" id="__codelineno-13-11" name="__codelineno-13-11"></a>                <span class="s2">"アーキテクチャ"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"エンコーダ"</span><span class="p">,</span> <span class="s2">"デコーダ"</span><span class="p">,</span> <span class="s2">"接続"</span><span class="p">]</span>
+<a href="#__codelineno-13-12" id="__codelineno-13-12" name="__codelineno-13-12"></a>            <span class="p">},</span>
+<a href="#__codelineno-13-13" id="__codelineno-13-13" name="__codelineno-13-13"></a>            <span class="s2">"実装"</span><span class="p">:</span> <span class="p">{</span>
+<a href="#__codelineno-13-14" id="__codelineno-13-14" name="__codelineno-13-14"></a>                <span class="s2">"スクラッチ実装"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"各コンポーネント"</span><span class="p">,</span> <span class="s2">"全体統合"</span><span class="p">],</span>
+<a href="#__codelineno-13-15" id="__codelineno-13-15" name="__codelineno-13-15"></a>                <span class="s2">"最適化"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"メモリ効率"</span><span class="p">,</span> <span class="s2">"計算効率"</span><span class="p">,</span> <span class="s2">"並列化"</span><span class="p">],</span>
+<a href="#__codelineno-13-16" id="__codelineno-13-16" name="__codelineno-13-16"></a>                <span class="s2">"応用"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"言語モデル"</span><span class="p">,</span> <span class="s2">"翻訳"</span><span class="p">,</span> <span class="s2">"コード生成"</span><span class="p">]</span>
+<a href="#__codelineno-13-17" id="__codelineno-13-17" name="__codelineno-13-17"></a>            <span class="p">}</span>
+<a href="#__codelineno-13-18" id="__codelineno-13-18" name="__codelineno-13-18"></a>        <span class="p">}</span>
+<a href="#__codelineno-13-19" id="__codelineno-13-19" name="__codelineno-13-19"></a>
+<a href="#__codelineno-13-20" id="__codelineno-13-20" name="__codelineno-13-20"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">learning_progression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-13-21" id="__codelineno-13-21" name="__codelineno-13-21"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-13-22" id="__codelineno-13-22" name="__codelineno-13-22"></a><span class="sd">        段階的な学習の進行</span>
+<a href="#__codelineno-13-23" id="__codelineno-13-23" name="__codelineno-13-23"></a><span class="sd">        """</span>
+<a href="#__codelineno-13-24" id="__codelineno-13-24" name="__codelineno-13-24"></a>        <span class="c1"># Phase 1: 理論の理解</span>
+<a href="#__codelineno-13-25" id="__codelineno-13-25" name="__codelineno-13-25"></a>        <span class="n">theory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">understand_mathematics</span><span class="p">()</span>
+<a href="#__codelineno-13-26" id="__codelineno-13-26" name="__codelineno-13-26"></a>
+<a href="#__codelineno-13-27" id="__codelineno-13-27" name="__codelineno-13-27"></a>        <span class="c1"># Phase 2: 小さな実装</span>
+<a href="#__codelineno-13-28" id="__codelineno-13-28" name="__codelineno-13-28"></a>        <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">implement_components</span><span class="p">()</span>
+<a href="#__codelineno-13-29" id="__codelineno-13-29" name="__codelineno-13-29"></a>
+<a href="#__codelineno-13-30" id="__codelineno-13-30" name="__codelineno-13-30"></a>        <span class="c1"># Phase 3: 統合</span>
+<a href="#__codelineno-13-31" id="__codelineno-13-31" name="__codelineno-13-31"></a>        <span class="n">full_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrate_components</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+<a href="#__codelineno-13-32" id="__codelineno-13-32" name="__codelineno-13-32"></a>
+<a href="#__codelineno-13-33" id="__codelineno-13-33" name="__codelineno-13-33"></a>        <span class="c1"># Phase 4: 応用</span>
+<a href="#__codelineno-13-34" id="__codelineno-13-34" name="__codelineno-13-34"></a>        <span class="n">applications</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_applications</span><span class="p">(</span><span class="n">full_model</span><span class="p">)</span>
+<a href="#__codelineno-13-35" id="__codelineno-13-35" name="__codelineno-13-35"></a>
+<a href="#__codelineno-13-36" id="__codelineno-13-36" name="__codelineno-13-36"></a>        <span class="k">return</span> <span class="n">applications</span>
+</code></pre></div>
+<h3 id="_8">実装中心のアプローチ<a class="headerlink" href="#_8" title="Permanent link">¶</a></h3>
+<p>本書の特徴は、すべての概念を実際に動くコードで説明することです：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-14-1" id="__codelineno-14-1" name="__codelineno-14-1"></a><span class="c1"># 例：Attention機構の段階的実装</span>
+<a href="#__codelineno-14-2" id="__codelineno-14-2" name="__codelineno-14-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">StepByStepAttention</span><span class="p">:</span>
+<a href="#__codelineno-14-3" id="__codelineno-14-3" name="__codelineno-14-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">step1_basic_dot_product</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-14-4" id="__codelineno-14-4" name="__codelineno-14-4"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-14-5" id="__codelineno-14-5" name="__codelineno-14-5"></a><span class="sd">        ステップ1: 基本的な内積注意</span>
+<a href="#__codelineno-14-6" id="__codelineno-14-6" name="__codelineno-14-6"></a><span class="sd">        """</span>
+<a href="#__codelineno-14-7" id="__codelineno-14-7" name="__codelineno-14-7"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">dot_product_attention</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<a href="#__codelineno-14-8" id="__codelineno-14-8" name="__codelineno-14-8"></a>            <span class="c1"># 最もシンプルな形</span>
+<a href="#__codelineno-14-9" id="__codelineno-14-9" name="__codelineno-14-9"></a>            <span class="n">score</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+<a href="#__codelineno-14-10" id="__codelineno-14-10" name="__codelineno-14-10"></a>            <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>  <span class="c1"># 0-1の範囲に</span>
+<a href="#__codelineno-14-11" id="__codelineno-14-11" name="__codelineno-14-11"></a>            <span class="n">output</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">value</span>
+<a href="#__codelineno-14-12" id="__codelineno-14-12" name="__codelineno-14-12"></a>            <span class="k">return</span> <span class="n">output</span>
+<a href="#__codelineno-14-13" id="__codelineno-14-13" name="__codelineno-14-13"></a>
+<a href="#__codelineno-14-14" id="__codelineno-14-14" name="__codelineno-14-14"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">step2_scaled_attention</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-14-15" id="__codelineno-14-15" name="__codelineno-14-15"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-14-16" id="__codelineno-14-16" name="__codelineno-14-16"></a><span class="sd">        ステップ2: スケーリングを追加</span>
+<a href="#__codelineno-14-17" id="__codelineno-14-17" name="__codelineno-14-17"></a><span class="sd">        """</span>
+<a href="#__codelineno-14-18" id="__codelineno-14-18" name="__codelineno-14-18"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">scaled_dot_product_attention</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<a href="#__codelineno-14-19" id="__codelineno-14-19" name="__codelineno-14-19"></a>            <span class="n">d_k</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a href="#__codelineno-14-20" id="__codelineno-14-20" name="__codelineno-14-20"></a>            <span class="n">score</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_k</span><span class="p">)</span>
+<a href="#__codelineno-14-21" id="__codelineno-14-21" name="__codelineno-14-21"></a>            <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<a href="#__codelineno-14-22" id="__codelineno-14-22" name="__codelineno-14-22"></a>            <span class="n">output</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">value</span>
+<a href="#__codelineno-14-23" id="__codelineno-14-23" name="__codelineno-14-23"></a>            <span class="k">return</span> <span class="n">output</span>
+<a href="#__codelineno-14-24" id="__codelineno-14-24" name="__codelineno-14-24"></a>
+<a href="#__codelineno-14-25" id="__codelineno-14-25" name="__codelineno-14-25"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">step3_matrix_attention</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-14-26" id="__codelineno-14-26" name="__codelineno-14-26"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-14-27" id="__codelineno-14-27" name="__codelineno-14-27"></a><span class="sd">        ステップ3: 行列演算に拡張</span>
+<a href="#__codelineno-14-28" id="__codelineno-14-28" name="__codelineno-14-28"></a><span class="sd">        """</span>
+<a href="#__codelineno-14-29" id="__codelineno-14-29" name="__codelineno-14-29"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">matrix_attention</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">):</span>
+<a href="#__codelineno-14-30" id="__codelineno-14-30" name="__codelineno-14-30"></a>            <span class="n">d_k</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a href="#__codelineno-14-31" id="__codelineno-14-31" name="__codelineno-14-31"></a>            <span class="n">scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">K</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_k</span><span class="p">)</span>
+<a href="#__codelineno-14-32" id="__codelineno-14-32" name="__codelineno-14-32"></a>            <span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<a href="#__codelineno-14-33" id="__codelineno-14-33" name="__codelineno-14-33"></a>            <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+<a href="#__codelineno-14-34" id="__codelineno-14-34" name="__codelineno-14-34"></a>            <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">weights</span>
+<a href="#__codelineno-14-35" id="__codelineno-14-35" name="__codelineno-14-35"></a>
+<a href="#__codelineno-14-36" id="__codelineno-14-36" name="__codelineno-14-36"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">step4_multi_head</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-14-37" id="__codelineno-14-37" name="__codelineno-14-37"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-14-38" id="__codelineno-14-38" name="__codelineno-14-38"></a><span class="sd">        ステップ4: マルチヘッド化</span>
+<a href="#__codelineno-14-39" id="__codelineno-14-39" name="__codelineno-14-39"></a><span class="sd">        """</span>
+<a href="#__codelineno-14-40" id="__codelineno-14-40" name="__codelineno-14-40"></a>        <span class="k">class</span><span class="w"> </span><span class="nc">MultiHeadAttention</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<a href="#__codelineno-14-41" id="__codelineno-14-41" name="__codelineno-14-41"></a>            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">n_heads</span><span class="p">):</span>
+<a href="#__codelineno-14-42" id="__codelineno-14-42" name="__codelineno-14-42"></a>                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<a href="#__codelineno-14-43" id="__codelineno-14-43" name="__codelineno-14-43"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">d_model</span> <span class="o">=</span> <span class="n">d_model</span>
+<a href="#__codelineno-14-44" id="__codelineno-14-44" name="__codelineno-14-44"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span> <span class="o">=</span> <span class="n">n_heads</span>
+<a href="#__codelineno-14-45" id="__codelineno-14-45" name="__codelineno-14-45"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">d_k</span> <span class="o">=</span> <span class="n">d_model</span> <span class="o">//</span> <span class="n">n_heads</span>
+<a href="#__codelineno-14-46" id="__codelineno-14-46" name="__codelineno-14-46"></a>
+<a href="#__codelineno-14-47" id="__codelineno-14-47" name="__codelineno-14-47"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">W_q</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-14-48" id="__codelineno-14-48" name="__codelineno-14-48"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">W_k</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-14-49" id="__codelineno-14-49" name="__codelineno-14-49"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">W_v</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-14-50" id="__codelineno-14-50" name="__codelineno-14-50"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">W_o</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-14-51" id="__codelineno-14-51" name="__codelineno-14-51"></a>
+<a href="#__codelineno-14-52" id="__codelineno-14-52" name="__codelineno-14-52"></a>            <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a href="#__codelineno-14-53" id="__codelineno-14-53" name="__codelineno-14-53"></a>                <span class="n">batch_size</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a href="#__codelineno-14-54" id="__codelineno-14-54" name="__codelineno-14-54"></a>
+<a href="#__codelineno-14-55" id="__codelineno-14-55" name="__codelineno-14-55"></a>                <span class="c1"># 線形変換と形状変更</span>
+<a href="#__codelineno-14-56" id="__codelineno-14-56" name="__codelineno-14-56"></a>                <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_q</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_k</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<a href="#__codelineno-14-57" id="__codelineno-14-57" name="__codelineno-14-57"></a>                <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_k</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_k</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<a href="#__codelineno-14-58" id="__codelineno-14-58" name="__codelineno-14-58"></a>                <span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_v</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_k</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<a href="#__codelineno-14-59" id="__codelineno-14-59" name="__codelineno-14-59"></a>
+<a href="#__codelineno-14-60" id="__codelineno-14-60" name="__codelineno-14-60"></a>                <span class="c1"># アテンション計算</span>
+<a href="#__codelineno-14-61" id="__codelineno-14-61" name="__codelineno-14-61"></a>                <span class="n">scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">K</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_k</span><span class="p">)</span>
+<a href="#__codelineno-14-62" id="__codelineno-14-62" name="__codelineno-14-62"></a>
+<a href="#__codelineno-14-63" id="__codelineno-14-63" name="__codelineno-14-63"></a>                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a href="#__codelineno-14-64" id="__codelineno-14-64" name="__codelineno-14-64"></a>                    <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e9</span><span class="p">)</span>
+<a href="#__codelineno-14-65" id="__codelineno-14-65" name="__codelineno-14-65"></a>
+<a href="#__codelineno-14-66" id="__codelineno-14-66" name="__codelineno-14-66"></a>                <span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<a href="#__codelineno-14-67" id="__codelineno-14-67" name="__codelineno-14-67"></a>                <span class="n">context</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+<a href="#__codelineno-14-68" id="__codelineno-14-68" name="__codelineno-14-68"></a>
+<a href="#__codelineno-14-69" id="__codelineno-14-69" name="__codelineno-14-69"></a>                <span class="c1"># 形状を戻す</span>
+<a href="#__codelineno-14-70" id="__codelineno-14-70" name="__codelineno-14-70"></a>                <span class="n">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+<a href="#__codelineno-14-71" id="__codelineno-14-71" name="__codelineno-14-71"></a>                    <span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_model</span>
+<a href="#__codelineno-14-72" id="__codelineno-14-72" name="__codelineno-14-72"></a>                <span class="p">)</span>
+<a href="#__codelineno-14-73" id="__codelineno-14-73" name="__codelineno-14-73"></a>
+<a href="#__codelineno-14-74" id="__codelineno-14-74" name="__codelineno-14-74"></a>                <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_o</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<a href="#__codelineno-14-75" id="__codelineno-14-75" name="__codelineno-14-75"></a>                <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">weights</span>
+</code></pre></div>
+<h3 id="_9">デバッグとビジュアライゼーション<a class="headerlink" href="#_9" title="Permanent link">¶</a></h3>
+<p>理解を深めるため、すべての概念を可視化します：</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<a href="#__codelineno-15-2" id="__codelineno-15-2" name="__codelineno-15-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<a href="#__codelineno-15-3" id="__codelineno-15-3" name="__codelineno-15-3"></a>
+<a href="#__codelineno-15-4" id="__codelineno-15-4" name="__codelineno-15-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">AttentionVisualizer</span><span class="p">:</span>
+<a href="#__codelineno-15-5" id="__codelineno-15-5" name="__codelineno-15-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">visualize_attention_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">attention_weights</span><span class="p">):</span>
+<a href="#__codelineno-15-6" id="__codelineno-15-6" name="__codelineno-15-6"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-15-7" id="__codelineno-15-7" name="__codelineno-15-7"></a><span class="sd">        Attention重みの可視化</span>
+<a href="#__codelineno-15-8" id="__codelineno-15-8" name="__codelineno-15-8"></a><span class="sd">        """</span>
+<a href="#__codelineno-15-9" id="__codelineno-15-9" name="__codelineno-15-9"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<a href="#__codelineno-15-10" id="__codelineno-15-10" name="__codelineno-15-10"></a>
+<a href="#__codelineno-15-11" id="__codelineno-15-11" name="__codelineno-15-11"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<a href="#__codelineno-15-12" id="__codelineno-15-12" name="__codelineno-15-12"></a>        <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+<a href="#__codelineno-15-13" id="__codelineno-15-13" name="__codelineno-15-13"></a>            <span class="n">attention_weights</span><span class="p">,</span>
+<a href="#__codelineno-15-14" id="__codelineno-15-14" name="__codelineno-15-14"></a>            <span class="n">xticklabels</span><span class="o">=</span><span class="n">tokens</span><span class="p">,</span>
+<a href="#__codelineno-15-15" id="__codelineno-15-15" name="__codelineno-15-15"></a>            <span class="n">yticklabels</span><span class="o">=</span><span class="n">tokens</span><span class="p">,</span>
+<a href="#__codelineno-15-16" id="__codelineno-15-16" name="__codelineno-15-16"></a>            <span class="n">cmap</span><span class="o">=</span><span class="s1">'Blues'</span><span class="p">,</span>
+<a href="#__codelineno-15-17" id="__codelineno-15-17" name="__codelineno-15-17"></a>            <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">'label'</span><span class="p">:</span> <span class="s1">'Attention Weight'</span><span class="p">}</span>
+<a href="#__codelineno-15-18" id="__codelineno-15-18" name="__codelineno-15-18"></a>        <span class="p">)</span>
+<a href="#__codelineno-15-19" id="__codelineno-15-19" name="__codelineno-15-19"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Attention Weights Visualization'</span><span class="p">)</span>
+<a href="#__codelineno-15-20" id="__codelineno-15-20" name="__codelineno-15-20"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Keys (attended to)'</span><span class="p">)</span>
+<a href="#__codelineno-15-21" id="__codelineno-15-21" name="__codelineno-15-21"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Queries (attending from)'</span><span class="p">)</span>
+<a href="#__codelineno-15-22" id="__codelineno-15-22" name="__codelineno-15-22"></a>
+<a href="#__codelineno-15-23" id="__codelineno-15-23" name="__codelineno-15-23"></a>        <span class="c1"># 特定のトークンがどこに注目しているかハイライト</span>
+<a href="#__codelineno-15-24" id="__codelineno-15-24" name="__codelineno-15-24"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)):</span>
+<a href="#__codelineno-15-25" id="__codelineno-15-25" name="__codelineno-15-25"></a>            <span class="n">max_attention_idx</span> <span class="o">=</span> <span class="n">attention_weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+<a href="#__codelineno-15-26" id="__codelineno-15-26" name="__codelineno-15-26"></a>            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">max_attention_idx</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">'r*'</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<a href="#__codelineno-15-27" id="__codelineno-15-27" name="__codelineno-15-27"></a>
+<a href="#__codelineno-15-28" id="__codelineno-15-28" name="__codelineno-15-28"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<a href="#__codelineno-15-29" id="__codelineno-15-29" name="__codelineno-15-29"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<a href="#__codelineno-15-30" id="__codelineno-15-30" name="__codelineno-15-30"></a>
+<a href="#__codelineno-15-31" id="__codelineno-15-31" name="__codelineno-15-31"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">visualize_positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a href="#__codelineno-15-32" id="__codelineno-15-32" name="__codelineno-15-32"></a><span class="w">        </span><span class="sd">"""</span>
+<a href="#__codelineno-15-33" id="__codelineno-15-33" name="__codelineno-15-33"></a><span class="sd">        位置エンコーディングの可視化</span>
+<a href="#__codelineno-15-34" id="__codelineno-15-34" name="__codelineno-15-34"></a><span class="sd">        """</span>
+<a href="#__codelineno-15-35" id="__codelineno-15-35" name="__codelineno-15-35"></a>        <span class="n">d_model</span> <span class="o">=</span> <span class="mi">128</span>
+<a href="#__codelineno-15-36" id="__codelineno-15-36" name="__codelineno-15-36"></a>        <span class="n">max_len</span> <span class="o">=</span> <span class="mi">100</span>
+<a href="#__codelineno-15-37" id="__codelineno-15-37" name="__codelineno-15-37"></a>
+<a href="#__codelineno-15-38" id="__codelineno-15-38" name="__codelineno-15-38"></a>        <span class="n">pe</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">max_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-15-39" id="__codelineno-15-39" name="__codelineno-15-39"></a>        <span class="n">position</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_len</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<a href="#__codelineno-15-40" id="__codelineno-15-40" name="__codelineno-15-40"></a>
+<a href="#__codelineno-15-41" id="__codelineno-15-41" name="__codelineno-15-41"></a>        <span class="n">div_term</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">*</span> 
+<a href="#__codelineno-15-42" id="__codelineno-15-42" name="__codelineno-15-42"></a>                            <span class="o">-</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10000.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">d_model</span><span class="p">))</span>
+<a href="#__codelineno-15-43" id="__codelineno-15-43" name="__codelineno-15-43"></a>
+<a href="#__codelineno-15-44" id="__codelineno-15-44" name="__codelineno-15-44"></a>        <span class="n">pe</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+<a href="#__codelineno-15-45" id="__codelineno-15-45" name="__codelineno-15-45"></a>        <span class="n">pe</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+<a href="#__codelineno-15-46" id="__codelineno-15-46" name="__codelineno-15-46"></a>
+<a href="#__codelineno-15-47" id="__codelineno-15-47" name="__codelineno-15-47"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<a href="#__codelineno-15-48" id="__codelineno-15-48" name="__codelineno-15-48"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pe</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'RdBu'</span><span class="p">)</span>
+<a href="#__codelineno-15-49" id="__codelineno-15-49" name="__codelineno-15-49"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">'Value'</span><span class="p">)</span>
+<a href="#__codelineno-15-50" id="__codelineno-15-50" name="__codelineno-15-50"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Dimension'</span><span class="p">)</span>
+<a href="#__codelineno-15-51" id="__codelineno-15-51" name="__codelineno-15-51"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Position'</span><span class="p">)</span>
+<a href="#__codelineno-15-52" id="__codelineno-15-52" name="__codelineno-15-52"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Positional Encoding Visualization'</span><span class="p">)</span>
+<a href="#__codelineno-15-53" id="__codelineno-15-53" name="__codelineno-15-53"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="_10">応用力の獲得<a class="headerlink" href="#_10" title="Permanent link">¶</a></h3>
+<p>最終的に、以下のような実用的なスキルが身につきます：</p>
+<ol>
+<li>
+<p><strong>独自タスクへの適用</strong>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-16-1" id="__codelineno-16-1" name="__codelineno-16-1"></a><span class="c1"># コード要約タスクの実装</span>
+<a href="#__codelineno-16-2" id="__codelineno-16-2" name="__codelineno-16-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">CodeSummarizer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<a href="#__codelineno-16-3" id="__codelineno-16-3" name="__codelineno-16-3"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="o">=</span><span class="mi">512</span><span class="p">):</span>
+<a href="#__codelineno-16-4" id="__codelineno-16-4" name="__codelineno-16-4"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<a href="#__codelineno-16-5" id="__codelineno-16-5" name="__codelineno-16-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">TransformerEncoder</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-16-6" id="__codelineno-16-6" name="__codelineno-16-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">TransformerDecoder</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+<a href="#__codelineno-16-7" id="__codelineno-16-7" name="__codelineno-16-7"></a>
+<a href="#__codelineno-16-8" id="__codelineno-16-8" name="__codelineno-16-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code_tokens</span><span class="p">,</span> <span class="n">summary_tokens</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a href="#__codelineno-16-9" id="__codelineno-16-9" name="__codelineno-16-9"></a>        <span class="c1"># コードを理解</span>
+<a href="#__codelineno-16-10" id="__codelineno-16-10" name="__codelineno-16-10"></a>        <span class="n">code_representation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">code_tokens</span><span class="p">)</span>
+<a href="#__codelineno-16-11" id="__codelineno-16-11" name="__codelineno-16-11"></a>
+<a href="#__codelineno-16-12" id="__codelineno-16-12" name="__codelineno-16-12"></a>        <span class="c1"># 要約を生成</span>
+<a href="#__codelineno-16-13" id="__codelineno-16-13" name="__codelineno-16-13"></a>        <span class="k">if</span> <span class="n">summary_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a href="#__codelineno-16-14" id="__codelineno-16-14" name="__codelineno-16-14"></a>            <span class="c1"># 推論時：要約を自己回帰的に生成</span>
+<a href="#__codelineno-16-15" id="__codelineno-16-15" name="__codelineno-16-15"></a>            <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_summary</span><span class="p">(</span><span class="n">code_representation</span><span class="p">)</span>
+<a href="#__codelineno-16-16" id="__codelineno-16-16" name="__codelineno-16-16"></a>        <span class="k">else</span><span class="p">:</span>
+<a href="#__codelineno-16-17" id="__codelineno-16-17" name="__codelineno-16-17"></a>            <span class="c1"># 訓練時：教師あり学習</span>
+<a href="#__codelineno-16-18" id="__codelineno-16-18" name="__codelineno-16-18"></a>            <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">summary_tokens</span><span class="p">,</span> <span class="n">code_representation</span><span class="p">)</span>
+<a href="#__codelineno-16-19" id="__codelineno-16-19" name="__codelineno-16-19"></a>
+<a href="#__codelineno-16-20" id="__codelineno-16-20" name="__codelineno-16-20"></a>        <span class="k">return</span> <span class="n">summary</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>ファインチューニングの実践</strong>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-17-1" id="__codelineno-17-1" name="__codelineno-17-1"></a><span class="c1"># 事前学習済みモデルの特定タスクへの適応</span>
+<a href="#__codelineno-17-2" id="__codelineno-17-2" name="__codelineno-17-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">finetune_for_bug_detection</span><span class="p">(</span><span class="n">pretrained_model</span><span class="p">,</span> <span class="n">bug_dataset</span><span class="p">):</span>
+<a href="#__codelineno-17-3" id="__codelineno-17-3" name="__codelineno-17-3"></a>    <span class="c1"># 最終層を置き換え</span>
+<a href="#__codelineno-17-4" id="__codelineno-17-4" name="__codelineno-17-4"></a>    <span class="n">pretrained_model</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+<a href="#__codelineno-17-5" id="__codelineno-17-5" name="__codelineno-17-5"></a>        <span class="n">pretrained_model</span><span class="o">.</span><span class="n">d_model</span><span class="p">,</span> 
+<a href="#__codelineno-17-6" id="__codelineno-17-6" name="__codelineno-17-6"></a>        <span class="n">num_bug_types</span>
+<a href="#__codelineno-17-7" id="__codelineno-17-7" name="__codelineno-17-7"></a>    <span class="p">)</span>
+<a href="#__codelineno-17-8" id="__codelineno-17-8" name="__codelineno-17-8"></a>
+<a href="#__codelineno-17-9" id="__codelineno-17-9" name="__codelineno-17-9"></a>    <span class="c1"># 差分学習率</span>
+<a href="#__codelineno-17-10" id="__codelineno-17-10" name="__codelineno-17-10"></a>    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">([</span>
+<a href="#__codelineno-17-11" id="__codelineno-17-11" name="__codelineno-17-11"></a>        <span class="p">{</span><span class="s1">'params'</span><span class="p">:</span> <span class="n">pretrained_model</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="s1">'lr'</span><span class="p">:</span> <span class="mf">1e-5</span><span class="p">},</span>
+<a href="#__codelineno-17-12" id="__codelineno-17-12" name="__codelineno-17-12"></a>        <span class="p">{</span><span class="s1">'params'</span><span class="p">:</span> <span class="n">pretrained_model</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="s1">'lr'</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">}</span>
+<a href="#__codelineno-17-13" id="__codelineno-17-13" name="__codelineno-17-13"></a>    <span class="p">])</span>
+<a href="#__codelineno-17-14" id="__codelineno-17-14" name="__codelineno-17-14"></a>
+<a href="#__codelineno-17-15" id="__codelineno-17-15" name="__codelineno-17-15"></a>    <span class="c1"># 訓練ループ</span>
+<a href="#__codelineno-17-16" id="__codelineno-17-16" name="__codelineno-17-16"></a>    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
+<a href="#__codelineno-17-17" id="__codelineno-17-17" name="__codelineno-17-17"></a>        <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="n">bug_label</span> <span class="ow">in</span> <span class="n">bug_dataset</span><span class="p">:</span>
+<a href="#__codelineno-17-18" id="__codelineno-17-18" name="__codelineno-17-18"></a>            <span class="n">loss</span> <span class="o">=</span> <span class="n">train_step</span><span class="p">(</span><span class="n">pretrained_model</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">bug_label</span><span class="p">)</span>
+<a href="#__codelineno-17-19" id="__codelineno-17-19" name="__codelineno-17-19"></a>            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>プロダクション環境での運用</strong>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-18-1" id="__codelineno-18-1" name="__codelineno-18-1"></a><span class="c1"># 推論の最適化</span>
+<a href="#__codelineno-18-2" id="__codelineno-18-2" name="__codelineno-18-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">OptimizedInference</span><span class="p">:</span>
+<a href="#__codelineno-18-3" id="__codelineno-18-3" name="__codelineno-18-3"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+<a href="#__codelineno-18-4" id="__codelineno-18-4" name="__codelineno-18-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+<a href="#__codelineno-18-5" id="__codelineno-18-5" name="__codelineno-18-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<a href="#__codelineno-18-6" id="__codelineno-18-6" name="__codelineno-18-6"></a>
+<a href="#__codelineno-18-7" id="__codelineno-18-7" name="__codelineno-18-7"></a>        <span class="c1"># KVキャッシュの初期化</span>
+<a href="#__codelineno-18-8" id="__codelineno-18-8" name="__codelineno-18-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">kv_cache</span> <span class="o">=</span> <span class="p">{}</span>
+<a href="#__codelineno-18-9" id="__codelineno-18-9" name="__codelineno-18-9"></a>
+<a href="#__codelineno-18-10" id="__codelineno-18-10" name="__codelineno-18-10"></a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<a href="#__codelineno-18-11" id="__codelineno-18-11" name="__codelineno-18-11"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<a href="#__codelineno-18-12" id="__codelineno-18-12" name="__codelineno-18-12"></a>        <span class="c1"># バッチ推論の準備</span>
+<a href="#__codelineno-18-13" id="__codelineno-18-13" name="__codelineno-18-13"></a>        <span class="n">input_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+<a href="#__codelineno-18-14" id="__codelineno-18-14" name="__codelineno-18-14"></a>
+<a href="#__codelineno-18-15" id="__codelineno-18-15" name="__codelineno-18-15"></a>        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_length</span><span class="p">):</span>
+<a href="#__codelineno-18-16" id="__codelineno-18-16" name="__codelineno-18-16"></a>            <span class="c1"># KVキャッシュを活用した高速推論</span>
+<a href="#__codelineno-18-17" id="__codelineno-18-17" name="__codelineno-18-17"></a>            <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">past_kv</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kv_cache</span><span class="p">)</span>
+<a href="#__codelineno-18-18" id="__codelineno-18-18" name="__codelineno-18-18"></a>
+<a href="#__codelineno-18-19" id="__codelineno-18-19" name="__codelineno-18-19"></a>            <span class="c1"># 次のトークンを予測</span>
+<a href="#__codelineno-18-20" id="__codelineno-18-20" name="__codelineno-18-20"></a>            <span class="n">next_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">logits</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<a href="#__codelineno-18-21" id="__codelineno-18-21" name="__codelineno-18-21"></a>            <span class="n">input_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">next_token</span><span class="p">)</span>
+<a href="#__codelineno-18-22" id="__codelineno-18-22" name="__codelineno-18-22"></a>
+<a href="#__codelineno-18-23" id="__codelineno-18-23" name="__codelineno-18-23"></a>            <span class="k">if</span> <span class="n">next_token</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eos_token_id</span><span class="p">:</span>
+<a href="#__codelineno-18-24" id="__codelineno-18-24" name="__codelineno-18-24"></a>                <span class="k">break</span>
+<a href="#__codelineno-18-25" id="__codelineno-18-25" name="__codelineno-18-25"></a>
+<a href="#__codelineno-18-26" id="__codelineno-18-26" name="__codelineno-18-26"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h2 id="transformer_3">まとめ：なぜ今、Transformerを学ぶべきか<a class="headerlink" href="#transformer_3" title="Permanent link">¶</a></h2>
+<p>Transformerは単なる「流行りの技術」ではありません。それは、コンピュータが言語を理解する方法の根本的な変革であり、今後のソフトウェア開発に不可欠な技術です。</p>
+<p>プログラミング言語実装の経験を持つあなたには、Transformerを深く理解するための素晴らしい基礎があります：</p>
+<ul>
+<li><strong>パターン認識</strong>: 構文解析の経験は、Attentionメカニズムの理解に直結</li>
+<li><strong>最適化思考</strong>: コンパイラ最適化の知識は、モデル最適化に応用可能</li>
+<li><strong>システム設計</strong>: 大規模システムの設計経験は、大規模モデルの構築に活用可能</li>
+</ul>
+<p>次の章では、これらの知識を活かしながら、Transformerの基礎となる数学的概念を、プログラマーの視点から解説していきます。</p>
+<hr/>
+<h2 id="_11">演習問題<a class="headerlink" href="#_11" title="Permanent link">¶</a></h2>
+<ol>
+<li>
+<p><strong>概念理解</strong>: RNNとTransformerの並列処理能力の違いを、具体的なコード例で説明してください。</p>
+</li>
+<li>
+<p><strong>実装課題</strong>: 簡単なAttention機構を実装し、入力文の各単語がどの単語に注目しているかを可視化してください。</p>
+</li>
+<li>
+<p><strong>応用思考</strong>: あなたが普段使っているプログラミング言語のコンパイラに、Transformerを組み込むとしたら、どの部分に適用すると効果的でしょうか？</p>
+</li>
+<li>
+<p><strong>調査課題</strong>: 最新のコード生成AI（GitHub Copilot、CodeWhisperer等）を実際に使用し、その長所と短所をまとめてください。</p>
+</li>
+</ol>
+<h2 id="_12">参考文献<a class="headerlink" href="#_12" title="Permanent link">¶</a></h2>
+<ol>
+<li>Vaswani, A., et al. (2017). "Attention is All You Need"</li>
+<li>Devlin, J., et al. (2018). "BERT: Pre-training of Deep Bidirectional Transformers"</li>
+<li>Brown, T., et al. (2020). "Language Models are Few-Shot Learners"</li>
+<li>Chen, M., et al. (2021). "Evaluating Large Language Models Trained on Code"</li>
+</ol>
+<hr/>
+<p>次章では、「プログラミング言語処理との類似点」をさらに深く掘り下げ、コンパイラ技術者の視点からTransformerを理解していきます。</p>
+<aside class="md-source-file">
+<span class="md-source-file__fact">
+<span class="md-icon" title="最終更新日">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"></path></svg>
+</span>
+<span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+</span>
+<span class="md-source-file__fact">
+<span class="md-icon" title="作成日">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"></path></svg>
+</span>
+<span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+</span>
+</aside>
+</article>
+</div>
+<script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+<button class="md-top md-icon" data-md-component="top" hidden="" type="button">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"></path></svg>
+  ページトップへ戻る
+</button>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+<script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+<script src="../../javascripts/mathjax.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

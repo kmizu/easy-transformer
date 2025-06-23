@@ -1,0 +1,2619 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="プログラミング言語実装者のためのTransformer解説と実装">
+      
+      
+        <meta name="author" content="Your Name">
+      
+      
+        <link rel="canonical" href="https://yourusername.github.io/easy-transformer/part4/debugging-visualization/">
+      
+      
+        <link rel="prev" href="../component-implementation/">
+      
+      
+        <link rel="next" href="../validation/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>デバッグとビジュアライゼーション - Transformerを一から理解する</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../.." title="Transformerを一から理解する" class="md-header__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Transformerを一から理解する
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              デバッグとビジュアライゼーション
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part1/why-transformer/" class="md-tabs__link">
+          
+  
+  第1部 導入と基礎概念
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part2/tokenization/" class="md-tabs__link">
+          
+  
+  第2部 Transformerへの道のり
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part3/multi-head-attention/" class="md-tabs__link">
+          
+  
+  第3部 Transformerアーキテクチャ詳解
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../minimal-transformer/" class="md-tabs__link">
+          
+  
+  第4部 実装編
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part5/gpt-architecture/" class="md-tabs__link">
+          
+  
+  第5部 LLMへの拡張
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../exercises/part1-exercises/" class="md-tabs__link">
+          
+  
+  演習問題
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../advanced/optimization/" class="md-tabs__link">
+          
+  
+  発展的なトピック
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../appendix/glossary/" class="md-tabs__link">
+          
+  
+  付録
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Transformerを一から理解する" class="md-nav__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Transformerを一から理解する
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ホーム
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第1部 導入と基礎概念
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            第1部 導入と基礎概念
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/why-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    なぜTransformerが重要なのか
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/similarities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    プログラミング言語処理との類似点
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/math-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    必要な数学的基礎
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/pytorch-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyTorchの最小限の使い方
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第2部 Transformerへの道のり
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            第2部 Transformerへの道のり
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/tokenization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    単語の数値表現
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/attention-intuition/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    注意機構の直感的理解
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/positional-encoding/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    位置エンコーディング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/layers-and-deep-learning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    層の概念と深層学習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第3部 Transformerアーキテクチャ詳解
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            第3部 Transformerアーキテクチャ詳解
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/multi-head-attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-Head Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/feed-forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feed Forward Network
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/residual-normalization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    残差接続と層正規化
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/encoder-decoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    エンコーダとデコーダ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    第4部 実装編
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            第4部 実装編
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../minimal-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最小限のTransformer実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../component-implementation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    各コンポーネントの実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    デバッグとビジュアライゼーション
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    デバッグとビジュアライゼーション
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      はじめに：見えないものを見る
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 注意機構の可視化
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.1 注意機構の可視化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attention-weight" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attention Weightの詳細分析
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 勾配フローの追跡
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 学習過程の監視
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#154" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.4 モデル診断ツール
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    動作確認
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第5部 LLMへの拡張
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            第5部 LLMへの拡張
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/gpt-architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GPTアーキテクチャ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/pretraining-finetuning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    事前学習とファインチューニング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/tokenizer-details/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    トークナイザーの詳細
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/inference-techniques/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    推論時の工夫
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    演習問題
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            演習問題
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part1-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第1部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part2-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第2部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part3-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第3部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part4-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第4部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part5-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第5部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    発展的なトピック
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            発展的なトピック
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/optimization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最適化技術
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/multimodal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    マルチモーダル
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    付録
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            付録
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用語集
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    参考資料
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">デバッグと可視化<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">はじめに：見えないものを見る<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>コンパイラのデバッグを思い出してください。構文木を可視化し、中間表現をダンプし、最適化の各段階を追跡することで、複雑な変換過程を理解できます。print文デバッグから始めて、最終的には洗練されたデバッガーやプロファイラーを使うようになります。</p>
+<p>深層学習モデル、特にTransformerのような複雑なアーキテクチャでは、内部で何が起きているかを理解することが成功の鍵です。この章では、Transformerをデバッグし、その動作を可視化するための実践的な技術を学びます。</p>
+<h2 id="151">15.1 注意機構の可視化<a class="headerlink" href="#151" title="Permanent link">&para;</a></h2>
+<h3 id="attention-weight">Attention Weightの詳細分析<a class="headerlink" href="#attention-weight" title="Permanent link">&para;</a></h3>
+<p>```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from typing import Dict, List, Tuple, Optional, Any
+import matplotlib.patches as mpatches
+from matplotlib.patches import Rectangle, Circle, FancyBboxPatch
+from matplotlib.collections import LineCollection
+import matplotlib.cm as cm
+from IPython.display import HTML, display
+import ipywidgets as widgets
+import warnings
+warnings.filterwarnings('ignore')</p>
+<p>class AttentionVisualizer:
+    """注意機構の包括的な可視化ツール"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, model: nn.Module):
+    self.model = model
+    self.attention_weights = {}
+    self.hooks = []
+
+def register_hooks(self):
+    &quot;&quot;&quot;注意重みを記録するフックを登録&quot;&quot;&quot;
+    def create_hook(name):
+        def hook_fn(module, input, output):
+            # outputは(output, attention_weights)のタプル
+            if isinstance(output, tuple) and len(output) == 2:
+                _, attn_weights = output
+                if attn_weights is not None:
+                    self.attention_weights[name] = attn_weights.detach()
+            return output
+        return hook_fn
+
+    # すべてのMultiHeadAttentionモジュールにフックを登録
+    for name, module in self.model.named_modules():
+        if isinstance(module, nn.MultiheadAttention):
+            hook = module.register_forward_hook(create_hook(name))
+            self.hooks.append(hook)
+
+def remove_hooks(self):
+    &quot;&quot;&quot;フックを削除&quot;&quot;&quot;
+    for hook in self.hooks:
+        hook.remove()
+    self.hooks = []
+
+def visualize_attention_pattern(self, tokens: List[str], 
+                              layer_name: str = None):
+    &quot;&quot;&quot;注意パターンを可視化&quot;&quot;&quot;
+    if layer_name is None:
+        # 最初の層を使用
+        layer_name = list(self.attention_weights.keys())[0]
+
+    attn_weights = self.attention_weights[layer_name]
+
+    # バッチの最初のサンプル、すべてのヘッドの平均
+    if attn_weights.dim() == 4:  # [batch, heads, seq, seq]
+        attn_weights = attn_weights[0].mean(dim=0)
+    elif attn_weights.dim() == 3:  # [batch, seq, seq]
+        attn_weights = attn_weights[0]
+
+    attn_weights = attn_weights.cpu().numpy()
+
+    # ヒートマップ
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(attn_weights, xticklabels=tokens, yticklabels=tokens,
+               cmap=&#39;Blues&#39;, cbar_kws={&#39;label&#39;: &#39;Attention Weight&#39;})
+    plt.title(f&#39;Attention Pattern - {layer_name}&#39;)
+    plt.xlabel(&#39;Keys (Attended to)&#39;)
+    plt.ylabel(&#39;Queries (Attending from)&#39;)
+    plt.tight_layout()
+    plt.show()
+
+def visualize_head_diversity(self, tokens: List[str], 
+                           layer_name: str = None):
+    &quot;&quot;&quot;各ヘッドの多様性を可視化&quot;&quot;&quot;
+    if layer_name is None:
+        layer_name = list(self.attention_weights.keys())[0]
+
+    attn_weights = self.attention_weights[layer_name]
+
+    if attn_weights.dim() == 4:
+        attn_weights = attn_weights[0]  # 最初のバッチ
+    else:
+        print(&quot;Multi-head情報がありません&quot;)
+        return
+
+    n_heads = attn_weights.shape[0]
+    fig, axes = plt.subplots(2, 4, figsize=(16, 8))
+    axes = axes.flatten()
+
+    for head_idx in range(min(n_heads, 8)):
+        ax = axes[head_idx]
+        head_weights = attn_weights[head_idx].cpu().numpy()
+
+        im = ax.imshow(head_weights, cmap=&#39;Blues&#39;, aspect=&#39;auto&#39;)
+        ax.set_title(f&#39;Head {head_idx + 1}&#39;)
+
+        # 簡略化のため、ラベルは最初と最後のヘッドのみ
+        if head_idx == 0:
+            ax.set_yticks(range(len(tokens)))
+            ax.set_yticklabels(tokens, fontsize=8)
+        else:
+            ax.set_yticks([])
+
+        if head_idx &gt;= 4:
+            ax.set_xticks(range(len(tokens)))
+            ax.set_xticklabels(tokens, rotation=45, fontsize=8)
+        else:
+            ax.set_xticks([])
+
+    plt.suptitle(f&#39;Head Diversity - {layer_name}&#39;, fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
+    # ヘッド間の類似性を計算
+    self._compute_head_similarity(attn_weights)
+
+def _compute_head_similarity(self, attn_weights: torch.Tensor):
+    &quot;&quot;&quot;ヘッド間の類似性を計算&quot;&quot;&quot;
+    n_heads = attn_weights.shape[0]
+    similarity_matrix = torch.zeros(n_heads, n_heads)
+
+    for i in range(n_heads):
+        for j in range(n_heads):
+            # コサイン類似度
+            similarity = F.cosine_similarity(
+                attn_weights[i].flatten(),
+                attn_weights[j].flatten(),
+                dim=0
+            )
+            similarity_matrix[i, j] = similarity
+
+    # 類似性マトリックスを表示
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(similarity_matrix.numpy(), annot=True, fmt=&#39;.2f&#39;,
+               cmap=&#39;RdBu_r&#39;, center=0, vmin=-1, vmax=1,
+               xticklabels=[f&#39;H{i+1}&#39; for i in range(n_heads)],
+               yticklabels=[f&#39;H{i+1}&#39; for i in range(n_heads)])
+    plt.title(&#39;Head Similarity Matrix&#39;)
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<p>class AttentionFlowVisualizer:
+    """注意の流れを可視化"""</p>
+<div class="highlight"><pre><span></span><code>def create_attention_flow_diagram(self, tokens: List[str], 
+                                attention_weights: np.ndarray):
+    &quot;&quot;&quot;注意の流れ図を作成&quot;&quot;&quot;
+    seq_len = len(tokens)
+    fig, ax = plt.subplots(figsize=(12, 8))
+
+    # トークンの配置
+    y_positions = np.linspace(0.1, 0.9, seq_len)
+    x_left = 0.2
+    x_right = 0.8
+
+    # 左側（Query）と右側（Key）にトークンを配置
+    for i, (token, y) in enumerate(zip(tokens, y_positions)):
+        # Query側
+        ax.text(x_left, y, token, ha=&#39;right&#39;, va=&#39;center&#39;,
+               bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, facecolor=&#39;lightblue&#39;),
+               fontsize=12)
+        # Key側
+        ax.text(x_right, y, token, ha=&#39;left&#39;, va=&#39;center&#39;,
+               bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, facecolor=&#39;lightgreen&#39;),
+               fontsize=12)
+
+    # 注意の矢印を描画
+    for i in range(seq_len):
+        for j in range(seq_len):
+            weight = attention_weights[i, j]
+            if weight &gt; 0.1:  # 閾値
+                # 矢印の太さと透明度を重みに応じて調整
+                arrow = mpatches.FancyArrowPatch(
+                    (x_left + 0.05, y_positions[i]),
+                    (x_right - 0.05, y_positions[j]),
+                    connectionstyle=&quot;arc3,rad=0.2&quot;,
+                    arrowstyle=&#39;-&gt;&#39;, 
+                    mutation_scale=20,
+                    linewidth=weight * 5,
+                    alpha=weight,
+                    color=&#39;purple&#39;
+                )
+                ax.add_patch(arrow)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis(&#39;off&#39;)
+    ax.set_title(&#39;Attention Flow Visualization&#39;, fontsize=16, pad=20)
+
+    # 凡例
+    ax.text(0.5, 0.02, &#39;Query → Key (arrow thickness = attention weight)&#39;,
+           ha=&#39;center&#39;, fontsize=10, style=&#39;italic&#39;)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<p>class InteractiveAttentionExplorer:
+    """インタラクティブな注意探索ツール"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, model: nn.Module, tokenizer):
+    self.model = model
+    self.tokenizer = tokenizer
+    self.visualizer = AttentionVisualizer(model)
+
+def create_interactive_widget(self):
+    &quot;&quot;&quot;対話型ウィジェットを作成&quot;&quot;&quot;
+    # テキスト入力
+    text_input = widgets.Textarea(
+        value=&#39;The cat sat on the mat.&#39;,
+        description=&#39;Text:&#39;,
+        layout=widgets.Layout(width=&#39;500px&#39;, height=&#39;80px&#39;)
+    )
+
+    # 層選択
+    layer_dropdown = widgets.Dropdown(
+        options=[&#39;Layer 1&#39;, &#39;Layer 2&#39;, &#39;Layer 3&#39;, &#39;Layer 4&#39;],
+        value=&#39;Layer 1&#39;,
+        description=&#39;Layer:&#39;
+    )
+
+    # ヘッド選択
+    head_slider = widgets.IntSlider(
+        value=1,
+        min=1,
+        max=8,
+        step=1,
+        description=&#39;Head:&#39;,
+        continuous_update=False
+    )
+
+    # 可視化タイプ
+    viz_type = widgets.RadioButtons(
+        options=[&#39;Heatmap&#39;, &#39;Flow Diagram&#39;, &#39;Head Comparison&#39;],
+        value=&#39;Heatmap&#39;,
+        description=&#39;Viz Type:&#39;
+    )
+
+    # 出力エリア
+    output = widgets.Output()
+
+    def update_visualization(change):
+        with output:
+            output.clear_output(wait=True)
+
+            # トークン化
+            tokens = text_input.value.split()  # 簡易版
+
+            # ダミーの注意重み（実際はモデルから取得）
+            seq_len = len(tokens)
+            attention_weights = np.random.rand(seq_len, seq_len)
+            attention_weights = attention_weights / attention_weights.sum(axis=1, keepdims=True)
+
+            if viz_type.value == &#39;Heatmap&#39;:
+                self._plot_heatmap(tokens, attention_weights)
+            elif viz_type.value == &#39;Flow Diagram&#39;:
+                flow_viz = AttentionFlowVisualizer()
+                flow_viz.create_attention_flow_diagram(tokens, attention_weights)
+            else:
+                self._plot_head_comparison(tokens)
+
+    # イベントハンドラを登録
+    text_input.observe(update_visualization, names=&#39;value&#39;)
+    layer_dropdown.observe(update_visualization, names=&#39;value&#39;)
+    head_slider.observe(update_visualization, names=&#39;value&#39;)
+    viz_type.observe(update_visualization, names=&#39;value&#39;)
+
+    # 初期表示
+    update_visualization(None)
+
+    # レイアウト
+    controls = widgets.VBox([text_input, layer_dropdown, head_slider, viz_type])
+    return widgets.HBox([controls, output])
+
+def _plot_heatmap(self, tokens: List[str], weights: np.ndarray):
+    &quot;&quot;&quot;ヒートマップをプロット&quot;&quot;&quot;
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(weights, xticklabels=tokens, yticklabels=tokens,
+               cmap=&#39;Blues&#39;, cbar=True)
+    plt.title(&#39;Attention Weights Heatmap&#39;)
+    plt.tight_layout()
+    plt.show()
+
+def _plot_head_comparison(self, tokens: List[str]):
+    &quot;&quot;&quot;ヘッド比較をプロット&quot;&quot;&quot;
+    # ダミーデータで8つのヘッドを表示
+    fig, axes = plt.subplots(2, 4, figsize=(16, 8))
+    axes = axes.flatten()
+
+    for i in range(8):
+        ax = axes[i]
+        # 各ヘッドで異なるパターンを生成
+        if i &lt; 2:  # 局所的な注意
+            weights = np.eye(len(tokens))
+            for j in range(1, 2):
+                weights += np.eye(len(tokens), k=j) * 0.5
+                weights += np.eye(len(tokens), k=-j) * 0.5
+        elif i &lt; 4:  # 長距離の注意
+            weights = np.random.rand(len(tokens), len(tokens))
+            weights = weights / weights.sum(axis=1, keepdims=True)
+        else:  # 特定パターン
+            weights = np.zeros((len(tokens), len(tokens)))
+            weights[:, 0] = 0.5  # 最初のトークンに注目
+            weights[:, -1] = 0.5  # 最後のトークンに注目
+
+        im = ax.imshow(weights, cmap=&#39;Blues&#39;)
+        ax.set_title(f&#39;Head {i+1}&#39;)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    plt.suptitle(&#39;Attention Head Patterns&#39;)
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<h2 id="152">15.2 勾配フローの追跡<a class="headerlink" href="#152" title="Permanent link">&para;</a></h2>
+<p>class GradientFlowAnalyzer:
+    """勾配フローの分析ツール"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, model: nn.Module):
+    self.model = model
+    self.gradient_data = {}
+    self.activation_data = {}
+
+def register_gradient_hooks(self):
+    &quot;&quot;&quot;勾配を記録するフックを登録&quot;&quot;&quot;
+    def create_grad_hook(name):
+        def hook_fn(grad):
+            self.gradient_data[name] = {
+                &#39;mean&#39;: grad.mean().item(),
+                &#39;std&#39;: grad.std().item(),
+                &#39;max&#39;: grad.max().item(),
+                &#39;min&#39;: grad.min().item(),
+                &#39;norm&#39;: grad.norm().item()
+            }
+        return hook_fn
+
+    for name, param in self.model.named_parameters():
+        if param.requires_grad:
+            param.register_hook(create_grad_hook(name))
+
+def analyze_gradient_flow(self, loss: torch.Tensor):
+    &quot;&quot;&quot;勾配フローを分析&quot;&quot;&quot;
+    # 逆伝播
+    loss.backward()
+
+    # 勾配統計を可視化
+    self._plot_gradient_statistics()
+
+    # 勾配消失・爆発の検出
+    self._detect_gradient_issues()
+
+def _plot_gradient_statistics(self):
+    &quot;&quot;&quot;勾配統計をプロット&quot;&quot;&quot;
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+    # レイヤー名を整理
+    layer_names = list(self.gradient_data.keys())
+    layer_indices = range(len(layer_names))
+
+    # 平均勾配
+    ax = axes[0, 0]
+    means = [self.gradient_data[name][&#39;mean&#39;] for name in layer_names]
+    ax.bar(layer_indices, means)
+    ax.set_title(&#39;Mean Gradient per Layer&#39;)
+    ax.set_xlabel(&#39;Layer Index&#39;)
+    ax.set_ylabel(&#39;Mean Gradient&#39;)
+    ax.set_yscale(&#39;symlog&#39;)
+
+    # 勾配ノルム
+    ax = axes[0, 1]
+    norms = [self.gradient_data[name][&#39;norm&#39;] for name in layer_names]
+    ax.plot(layer_indices, norms, &#39;o-&#39;)
+    ax.set_title(&#39;Gradient Norm per Layer&#39;)
+    ax.set_xlabel(&#39;Layer Index&#39;)
+    ax.set_ylabel(&#39;Gradient Norm&#39;)
+    ax.set_yscale(&#39;log&#39;)
+
+    # 勾配の分散
+    ax = axes[1, 0]
+    stds = [self.gradient_data[name][&#39;std&#39;] for name in layer_names]
+    ax.bar(layer_indices, stds, color=&#39;orange&#39;)
+    ax.set_title(&#39;Gradient Std per Layer&#39;)
+    ax.set_xlabel(&#39;Layer Index&#39;)
+    ax.set_ylabel(&#39;Gradient Std&#39;)
+
+    # 勾配の最大値・最小値
+    ax = axes[1, 1]
+    maxs = [self.gradient_data[name][&#39;max&#39;] for name in layer_names]
+    mins = [self.gradient_data[name][&#39;min&#39;] for name in layer_names]
+    ax.plot(layer_indices, maxs, &#39;g-&#39;, label=&#39;Max&#39;)
+    ax.plot(layer_indices, mins, &#39;r-&#39;, label=&#39;Min&#39;)
+    ax.set_title(&#39;Gradient Range per Layer&#39;)
+    ax.set_xlabel(&#39;Layer Index&#39;)
+    ax.set_ylabel(&#39;Gradient Value&#39;)
+    ax.legend()
+    ax.set_yscale(&#39;symlog&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+    # 詳細なレポート
+    self._print_gradient_report()
+
+def _detect_gradient_issues(self):
+    &quot;&quot;&quot;勾配の問題を検出&quot;&quot;&quot;
+    issues = []
+
+    for name, stats in self.gradient_data.items():
+        # 勾配消失
+        if stats[&#39;norm&#39;] &lt; 1e-6:
+            issues.append(f&quot;勾配消失の可能性: {name} (norm={stats[&#39;norm&#39;]:.2e})&quot;)
+
+        # 勾配爆発
+        if stats[&#39;norm&#39;] &gt; 1e3:
+            issues.append(f&quot;勾配爆発の可能性: {name} (norm={stats[&#39;norm&#39;]:.2e})&quot;)
+
+        # 不安定な勾配
+        if stats[&#39;std&#39;] / (abs(stats[&#39;mean&#39;]) + 1e-8) &gt; 10:
+            issues.append(f&quot;不安定な勾配: {name} (変動係数が大きい)&quot;)
+
+    if issues:
+        print(&quot;=== 検出された問題 ===&quot;)
+        for issue in issues:
+            print(f&quot;⚠️  {issue}&quot;)
+    else:
+        print(&quot;✅ 勾配フローは正常です&quot;)
+
+def _print_gradient_report(self):
+    &quot;&quot;&quot;勾配レポートを出力&quot;&quot;&quot;
+    print(&quot;\n=== 勾配フロー詳細レポート ===\n&quot;)
+
+    # 最も大きい/小さい勾配を持つ層
+    sorted_by_norm = sorted(self.gradient_data.items(), 
+                           key=lambda x: x[1][&#39;norm&#39;])
+
+    print(&quot;勾配ノルムが最も小さい層 (Top 5):&quot;)
+    for name, stats in sorted_by_norm[:5]:
+        print(f&quot;  {name}: {stats[&#39;norm&#39;]:.2e}&quot;)
+
+    print(&quot;\n勾配ノルムが最も大きい層 (Top 5):&quot;)
+    for name, stats in sorted_by_norm[-5:]:
+        print(f&quot;  {name}: {stats[&#39;norm&#39;]:.2e}&quot;)
+</code></pre></div>
+<p>class ActivationAnalyzer:
+    """活性化の分析ツール"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, model: nn.Module):
+    self.model = model
+    self.activation_data = {}
+    self.hooks = []
+
+def register_activation_hooks(self):
+    &quot;&quot;&quot;活性化を記録するフックを登録&quot;&quot;&quot;
+    def create_hook(name):
+        def hook_fn(module, input, output):
+            if isinstance(output, torch.Tensor):
+                self.activation_data[name] = {
+                    &#39;mean&#39;: output.mean().item(),
+                    &#39;std&#39;: output.std().item(),
+                    &#39;zeros&#39;: (output == 0).float().mean().item(),
+                    &#39;shape&#39;: list(output.shape),
+                    &#39;histogram&#39;: output.detach().cpu().numpy().flatten()
+                }
+        return hook_fn
+
+    for name, module in self.model.named_modules():
+        if len(list(module.children())) == 0:  # リーフモジュール
+            hook = module.register_forward_hook(create_hook(name))
+            self.hooks.append(hook)
+
+def analyze_activations(self, input_data: torch.Tensor):
+    &quot;&quot;&quot;活性化を分析&quot;&quot;&quot;
+    # 順伝播
+    with torch.no_grad():
+        _ = self.model(input_data)
+
+    # 活性化の分布を可視化
+    self._plot_activation_distributions()
+
+    # デッドニューロンの検出
+    self._detect_dead_neurons()
+
+def _plot_activation_distributions(self):
+    &quot;&quot;&quot;活性化分布をプロット&quot;&quot;&quot;
+    n_layers = len(self.activation_data)
+    n_cols = 4
+    n_rows = (n_layers + n_cols - 1) // n_cols
+
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(16, 4*n_rows))
+    axes = axes.flatten() if n_rows &gt; 1 else [axes]
+
+    for idx, (name, data) in enumerate(self.activation_data.items()):
+        if idx &gt;= len(axes):
+            break
+
+        ax = axes[idx]
+
+        # ヒストグラム
+        hist_data = data[&#39;histogram&#39;]
+        if len(hist_data) &gt; 10000:
+            # サンプリング
+            indices = np.random.choice(len(hist_data), 10000, replace=False)
+            hist_data = hist_data[indices]
+
+        ax.hist(hist_data, bins=50, alpha=0.7, density=True)
+        ax.axvline(data[&#39;mean&#39;], color=&#39;red&#39;, linestyle=&#39;--&#39;, 
+                  label=f&#39;Mean: {data[&quot;mean&quot;]:.3f}&#39;)
+        ax.set_title(f&#39;{name}\n(zeros: {data[&quot;zeros&quot;]*100:.1f}%)&#39;)
+        ax.set_xlabel(&#39;Activation Value&#39;)
+        ax.set_ylabel(&#39;Density&#39;)
+        ax.legend()
+
+    # 余ったaxesを非表示
+    for idx in range(len(self.activation_data), len(axes)):
+        axes[idx].axis(&#39;off&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+def _detect_dead_neurons(self):
+    &quot;&quot;&quot;デッドニューロンを検出&quot;&quot;&quot;
+    print(&quot;\n=== デッドニューロン検出 ===\n&quot;)
+
+    dead_threshold = 0.9  # 90%以上がゼロ
+
+    for name, data in self.activation_data.items():
+        if data[&#39;zeros&#39;] &gt; dead_threshold:
+            print(f&quot;⚠️  {name}: {data[&#39;zeros&#39;]*100:.1f}% がゼロ (デッドニューロンの可能性)&quot;)
+</code></pre></div>
+<h2 id="153">15.3 学習過程の監視<a class="headerlink" href="#153" title="Permanent link">&para;</a></h2>
+<p>class TrainingMonitor:
+    """学習過程の包括的な監視ツール"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.metrics = {
+        &#39;loss&#39;: [],
+        &#39;learning_rate&#39;: [],
+        &#39;gradient_norm&#39;: [],
+        &#39;weight_update_ratio&#39;: [],
+        &#39;val_loss&#39;: [],
+        &#39;val_accuracy&#39;: []
+    }
+    self.batch_metrics = {
+        &#39;loss&#39;: [],
+        &#39;gradient_norm&#39;: []
+    }
+
+def log_batch(self, loss: float, model: nn.Module, 
+              optimizer: torch.optim.Optimizer):
+    &quot;&quot;&quot;バッチごとのメトリクスを記録&quot;&quot;&quot;
+    # 損失
+    self.batch_metrics[&#39;loss&#39;].append(loss)
+
+    # 勾配ノルム
+    total_norm = 0
+    for p in model.parameters():
+        if p.grad is not None:
+            total_norm += p.grad.norm().item() ** 2
+    total_norm = total_norm ** 0.5
+    self.batch_metrics[&#39;gradient_norm&#39;].append(total_norm)
+
+    # 重み更新比率
+    if len(self.batch_metrics[&#39;loss&#39;]) % 100 == 0:
+        self._compute_weight_update_ratio(model, optimizer)
+
+def log_epoch(self, epoch: int, train_loss: float, val_loss: float,
+              val_accuracy: float, learning_rate: float):
+    &quot;&quot;&quot;エポックごとのメトリクスを記録&quot;&quot;&quot;
+    self.metrics[&#39;loss&#39;].append(train_loss)
+    self.metrics[&#39;val_loss&#39;].append(val_loss)
+    self.metrics[&#39;val_accuracy&#39;].append(val_accuracy)
+    self.metrics[&#39;learning_rate&#39;].append(learning_rate)
+
+    # バッチメトリクスの平均
+    if self.batch_metrics[&#39;gradient_norm&#39;]:
+        avg_grad_norm = np.mean(self.batch_metrics[&#39;gradient_norm&#39;])
+        self.metrics[&#39;gradient_norm&#39;].append(avg_grad_norm)
+
+def _compute_weight_update_ratio(self, model: nn.Module,
+                               optimizer: torch.optim.Optimizer):
+    &quot;&quot;&quot;重み更新比率を計算&quot;&quot;&quot;
+    ratios = []
+
+    for group in optimizer.param_groups:
+        for p in group[&#39;params&#39;]:
+            if p.grad is not None:
+                # 更新量 / パラメータのノルム
+                update = group[&#39;lr&#39;] * p.grad
+                ratio = update.norm().item() / (p.norm().item() + 1e-8)
+                ratios.append(ratio)
+
+    if ratios:
+        self.metrics[&#39;weight_update_ratio&#39;].append(np.mean(ratios))
+
+def plot_training_curves(self):
+    &quot;&quot;&quot;学習曲線をプロット&quot;&quot;&quot;
+    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+
+    # 損失
+    ax = axes[0, 0]
+    epochs = range(1, len(self.metrics[&#39;loss&#39;]) + 1)
+    ax.plot(epochs, self.metrics[&#39;loss&#39;], &#39;b-&#39;, label=&#39;Train Loss&#39;)
+    ax.plot(epochs, self.metrics[&#39;val_loss&#39;], &#39;r-&#39;, label=&#39;Val Loss&#39;)
+    ax.set_xlabel(&#39;Epoch&#39;)
+    ax.set_ylabel(&#39;Loss&#39;)
+    ax.set_title(&#39;Training and Validation Loss&#39;)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # 精度
+    ax = axes[0, 1]
+    ax.plot(epochs, self.metrics[&#39;val_accuracy&#39;], &#39;g-&#39;)
+    ax.set_xlabel(&#39;Epoch&#39;)
+    ax.set_ylabel(&#39;Accuracy&#39;)
+    ax.set_title(&#39;Validation Accuracy&#39;)
+    ax.grid(True, alpha=0.3)
+
+    # 学習率
+    ax = axes[0, 2]
+    ax.plot(epochs, self.metrics[&#39;learning_rate&#39;], &#39;orange&#39;)
+    ax.set_xlabel(&#39;Epoch&#39;)
+    ax.set_ylabel(&#39;Learning Rate&#39;)
+    ax.set_title(&#39;Learning Rate Schedule&#39;)
+    ax.set_yscale(&#39;log&#39;)
+    ax.grid(True, alpha=0.3)
+
+    # 勾配ノルム
+    ax = axes[1, 0]
+    ax.plot(epochs, self.metrics[&#39;gradient_norm&#39;], &#39;purple&#39;)
+    ax.set_xlabel(&#39;Epoch&#39;)
+    ax.set_ylabel(&#39;Gradient Norm&#39;)
+    ax.set_title(&#39;Average Gradient Norm&#39;)
+    ax.set_yscale(&#39;log&#39;)
+    ax.grid(True, alpha=0.3)
+
+    # 重み更新比率
+    ax = axes[1, 1]
+    if self.metrics[&#39;weight_update_ratio&#39;]:
+        ax.plot(self.metrics[&#39;weight_update_ratio&#39;], &#39;brown&#39;)
+        ax.set_xlabel(&#39;Update Step&#39;)
+        ax.set_ylabel(&#39;Update/Weight Ratio&#39;)
+        ax.set_title(&#39;Weight Update Ratio&#39;)
+        ax.axhline(y=1e-3, color=&#39;r&#39;, linestyle=&#39;--&#39;, 
+                  label=&#39;Typical Good Range&#39;)
+        ax.legend()
+        ax.set_yscale(&#39;log&#39;)
+        ax.grid(True, alpha=0.3)
+
+    # バッチごとの損失
+    ax = axes[1, 2]
+    ax.plot(self.batch_metrics[&#39;loss&#39;][:1000], alpha=0.5)  # 最初の1000バッチ
+    ax.set_xlabel(&#39;Batch&#39;)
+    ax.set_ylabel(&#39;Loss&#39;)
+    ax.set_title(&#39;Batch Loss (First 1000 batches)&#39;)
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+def generate_training_report(self):
+    &quot;&quot;&quot;学習レポートを生成&quot;&quot;&quot;
+    print(&quot;=== 学習サマリーレポート ===\n&quot;)
+
+    # 最終的なメトリクス
+    print(f&quot;最終エポック:&quot;)
+    print(f&quot;  訓練損失: {self.metrics[&#39;loss&#39;][-1]:.4f}&quot;)
+    print(f&quot;  検証損失: {self.metrics[&#39;val_loss&#39;][-1]:.4f}&quot;)
+    print(f&quot;  検証精度: {self.metrics[&#39;val_accuracy&#39;][-1]:.4f}&quot;)
+
+    # 最良のエポック
+    best_val_loss_epoch = np.argmin(self.metrics[&#39;val_loss&#39;]) + 1
+    best_val_acc_epoch = np.argmax(self.metrics[&#39;val_accuracy&#39;]) + 1
+
+    print(f&quot;\n最良のパフォーマンス:&quot;)
+    print(f&quot;  最小検証損失: {min(self.metrics[&#39;val_loss&#39;]):.4f} (Epoch {best_val_loss_epoch})&quot;)
+    print(f&quot;  最高検証精度: {max(self.metrics[&#39;val_accuracy&#39;]):.4f} (Epoch {best_val_acc_epoch})&quot;)
+
+    # 過学習の検出
+    if len(self.metrics[&#39;loss&#39;]) &gt; 5:
+        recent_train = np.mean(self.metrics[&#39;loss&#39;][-5:])
+        recent_val = np.mean(self.metrics[&#39;val_loss&#39;][-5:])
+
+        if recent_val &gt; recent_train * 1.5:
+            print(&quot;\n⚠️  過学習の兆候が見られます&quot;)
+
+    # 学習の安定性
+    if self.batch_metrics[&#39;gradient_norm&#39;]:
+        grad_std = np.std(self.batch_metrics[&#39;gradient_norm&#39;])
+        grad_mean = np.mean(self.batch_metrics[&#39;gradient_norm&#39;])
+
+        if grad_std / grad_mean &gt; 2:
+            print(&quot;\n⚠️  勾配が不安定です&quot;)
+</code></pre></div>
+<h2 id="154">15.4 モデル診断ツール<a class="headerlink" href="#154" title="Permanent link">&para;</a></h2>
+<p>class ModelDiagnostics:
+    """モデルの包括的な診断ツール"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, model: nn.Module):
+    self.model = model
+
+def run_diagnostics(self, sample_input: torch.Tensor):
+    &quot;&quot;&quot;完全な診断を実行&quot;&quot;&quot;
+    print(&quot;=== モデル診断開始 ===\n&quot;)
+
+    # 1. モデル構造の分析
+    self._analyze_model_structure()
+
+    # 2. パラメータ分析
+    self._analyze_parameters()
+
+    # 3. 計算量分析
+    self._analyze_computation(sample_input)
+
+    # 4. メモリ使用量分析
+    self._analyze_memory(sample_input)
+
+    # 5. 推論速度測定
+    self._measure_inference_speed(sample_input)
+
+    print(&quot;\n=== 診断完了 ===&quot;)
+
+def _analyze_model_structure(self):
+    &quot;&quot;&quot;モデル構造を分析&quot;&quot;&quot;
+    print(&quot;1. モデル構造分析&quot;)
+
+    total_params = sum(p.numel() for p in self.model.parameters())
+    trainable_params = sum(p.numel() for p in self.model.parameters() 
+                         if p.requires_grad)
+
+    print(f&quot;  総パラメータ数: {total_params:,}&quot;)
+    print(f&quot;  学習可能パラメータ数: {trainable_params:,}&quot;)
+    print(f&quot;  固定パラメータ数: {total_params - trainable_params:,}&quot;)
+
+    # 層ごとのパラメータ数
+    print(&quot;\n  層ごとのパラメータ数:&quot;)
+    for name, module in self.model.named_modules():
+        if len(list(module.children())) == 0:  # リーフモジュール
+            params = sum(p.numel() for p in module.parameters())
+            if params &gt; 0:
+                print(f&quot;    {name}: {params:,}&quot;)
+
+def _analyze_parameters(self):
+    &quot;&quot;&quot;パラメータを分析&quot;&quot;&quot;
+    print(&quot;\n2. パラメータ分析&quot;)
+
+    # パラメータの統計
+    all_params = []
+    for p in self.model.parameters():
+        all_params.extend(p.detach().cpu().numpy().flatten())
+
+    all_params = np.array(all_params)
+
+    print(f&quot;  平均: {np.mean(all_params):.4f}&quot;)
+    print(f&quot;  標準偏差: {np.std(all_params):.4f}&quot;)
+    print(f&quot;  最小値: {np.min(all_params):.4f}&quot;)
+    print(f&quot;  最大値: {np.max(all_params):.4f}&quot;)
+
+    # スパース性
+    sparsity = (np.abs(all_params) &lt; 1e-6).mean()
+    print(f&quot;  スパース性: {sparsity*100:.2f}%&quot;)
+
+    # パラメータ分布のプロット
+    plt.figure(figsize=(10, 4))
+    plt.hist(all_params, bins=100, alpha=0.7, density=True)
+    plt.xlabel(&#39;Parameter Value&#39;)
+    plt.ylabel(&#39;Density&#39;)
+    plt.title(&#39;Parameter Distribution&#39;)
+    plt.axvline(x=0, color=&#39;red&#39;, linestyle=&#39;--&#39;, alpha=0.5)
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+def _analyze_computation(self, sample_input: torch.Tensor):
+    &quot;&quot;&quot;計算量を分析&quot;&quot;&quot;
+    print(&quot;\n3. 計算量分析&quot;)
+
+    # FLOPsを概算（簡易版）
+    total_mult_adds = 0
+
+    def count_operations(module, input, output):
+        nonlocal total_mult_adds
+
+        if isinstance(module, nn.Linear):
+            # Linear層: input_features * output_features
+            total_mult_adds += input[0].numel() * module.out_features
+        elif isinstance(module, nn.MultiheadAttention):
+            # Attention: O(n^2 * d)の計算量
+            seq_len = input[0].shape[1]
+            d_model = input[0].shape[2]
+            total_mult_adds += seq_len * seq_len * d_model
+
+    # フックを登録
+    hooks = []
+    for module in self.model.modules():
+        if isinstance(module, (nn.Linear, nn.MultiheadAttention)):
+            hook = module.register_forward_hook(count_operations)
+            hooks.append(hook)
+
+    # 順伝播
+    with torch.no_grad():
+        _ = self.model(sample_input)
+
+    # フックを削除
+    for hook in hooks:
+        hook.remove()
+
+    print(f&quot;  推定FLOP数: {total_mult_adds:,}&quot;)
+    print(f&quot;  GFLOP: {total_mult_adds / 1e9:.2f}&quot;)
+
+def _analyze_memory(self, sample_input: torch.Tensor):
+    &quot;&quot;&quot;メモリ使用量を分析&quot;&quot;&quot;
+    print(&quot;\n4. メモリ使用量分析&quot;)
+
+    # パラメータのメモリ
+    param_memory = sum(p.numel() * p.element_size() 
+                      for p in self.model.parameters())
+    print(f&quot;  パラメータメモリ: {param_memory / 1024**2:.2f} MB&quot;)
+
+    # 勾配のメモリ（学習時）
+    grad_memory = sum(p.numel() * p.element_size() 
+                     for p in self.model.parameters() 
+                     if p.requires_grad)
+    print(f&quot;  勾配メモリ: {grad_memory / 1024**2:.2f} MB&quot;)
+
+    # 活性化のメモリ（概算）
+    # 実際の測定にはメモリプロファイラーが必要
+    print(f&quot;  活性化メモリ: 入力サイズに依存&quot;)
+
+def _measure_inference_speed(self, sample_input: torch.Tensor):
+    &quot;&quot;&quot;推論速度を測定&quot;&quot;&quot;
+    print(&quot;\n5. 推論速度測定&quot;)
+
+    # ウォームアップ
+    for _ in range(10):
+        with torch.no_grad():
+            _ = self.model(sample_input)
+
+    # 測定
+    import time
+    n_runs = 100
+
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    start_time = time.time()
+
+    for _ in range(n_runs):
+        with torch.no_grad():
+            _ = self.model(sample_input)
+
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    end_time = time.time()
+
+    avg_time = (end_time - start_time) / n_runs * 1000  # ms
+
+    print(f&quot;  平均推論時間: {avg_time:.2f} ms&quot;)
+    print(f&quot;  スループット: {1000/avg_time:.2f} samples/sec&quot;)
+</code></pre></div>
+<h1 id="_3">実行例とデモ<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h1>
+<p>def run_comprehensive_demo():
+    """包括的なデモを実行"""
+    print("=" * 70)
+    print("Transformerデバッグ・可視化ツールのデモ")
+    print("=" * 70 + "\n")</p>
+<div class="highlight"><pre><span></span><code># ダミーモデルの作成
+class DummyTransformer(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.embedding = nn.Embedding(1000, 256)
+        self.transformer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(
+                d_model=256, nhead=8, dim_feedforward=1024,
+                batch_first=True
+            ),
+            num_layers=4
+        )
+        self.output = nn.Linear(256, 1000)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = self.transformer(x)
+        x = self.output(x)
+        return x
+
+model = DummyTransformer()
+
+# 1. 注意の可視化
+print(&quot;=== 1. 注意機構の可視化 ===\n&quot;)
+visualizer = AttentionVisualizer(model)
+
+# ダミーデータで注意パターンを生成
+tokens = [&quot;The&quot;, &quot;cat&quot;, &quot;sat&quot;, &quot;on&quot;, &quot;the&quot;, &quot;mat&quot;]
+dummy_attention = torch.rand(1, 8, len(tokens), len(tokens))
+dummy_attention = F.softmax(dummy_attention, dim=-1)
+
+# 注意フロー図
+flow_viz = AttentionFlowVisualizer()
+flow_viz.create_attention_flow_diagram(tokens, dummy_attention[0, 0].numpy())
+
+# 2. 勾配フロー分析
+print(&quot;\n=== 2. 勾配フロー分析 ===\n&quot;)
+grad_analyzer = GradientFlowAnalyzer(model)
+grad_analyzer.register_gradient_hooks()
+
+# ダミーの順伝播と逆伝播
+input_ids = torch.randint(0, 1000, (2, 10))
+output = model(input_ids)
+loss = output.mean()
+grad_analyzer.analyze_gradient_flow(loss)
+
+# 3. 活性化分析
+print(&quot;\n=== 3. 活性化分析 ===\n&quot;)
+act_analyzer = ActivationAnalyzer(model)
+act_analyzer.register_activation_hooks()
+act_analyzer.analyze_activations(input_ids)
+
+# 4. 学習監視
+print(&quot;\n=== 4. 学習過程の監視 ===\n&quot;)
+monitor = TrainingMonitor()
+
+# ダミーの学習データ
+for epoch in range(10):
+    # エポックごとのダミーメトリクス
+    train_loss = 2.5 * np.exp(-0.3 * epoch) + np.random.normal(0, 0.1)
+    val_loss = 2.5 * np.exp(-0.25 * epoch) + np.random.normal(0, 0.15)
+    val_acc = 1 - np.exp(-0.5 * epoch) + np.random.normal(0, 0.05)
+    lr = 0.001 * (0.1 ** (epoch // 3))
+
+    monitor.log_epoch(epoch, train_loss, val_loss, val_acc, lr)
+
+    # バッチごとのダミーメトリクス
+    for batch in range(50):
+        batch_loss = train_loss + np.random.normal(0, 0.2)
+        monitor.log_batch(batch_loss, model, 
+                        torch.optim.Adam(model.parameters()))
+
+monitor.plot_training_curves()
+monitor.generate_training_report()
+
+# 5. モデル診断
+print(&quot;\n=== 5. モデル診断 ===\n&quot;)
+diagnostics = ModelDiagnostics(model)
+diagnostics.run_diagnostics(input_ids)
+
+print(&quot;\n&quot; + &quot;=&quot; * 70)
+print(&quot;デモ完了&quot;)
+print(&quot;=&quot; * 70)
+</code></pre></div>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    run_comprehensive_demo()</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="最終更新日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="作成日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

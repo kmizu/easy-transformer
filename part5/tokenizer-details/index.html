@@ -1,0 +1,2647 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="プログラミング言語実装者のためのTransformer解説と実装">
+      
+      
+        <meta name="author" content="Your Name">
+      
+      
+        <link rel="canonical" href="https://yourusername.github.io/easy-transformer/part5/tokenizer-details/">
+      
+      
+        <link rel="prev" href="../pretraining-finetuning/">
+      
+      
+        <link rel="next" href="../inference-techniques/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>トークナイザーの詳細 - Transformerを一から理解する</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../.." title="Transformerを一から理解する" class="md-header__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Transformerを一から理解する
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              トークナイザーの詳細
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part1/why-transformer/" class="md-tabs__link">
+          
+  
+  第1部 導入と基礎概念
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part2/tokenization/" class="md-tabs__link">
+          
+  
+  第2部 Transformerへの道のり
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part3/multi-head-attention/" class="md-tabs__link">
+          
+  
+  第3部 Transformerアーキテクチャ詳解
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../part4/minimal-transformer/" class="md-tabs__link">
+          
+  
+  第4部 実装編
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../gpt-architecture/" class="md-tabs__link">
+          
+  
+  第5部 LLMへの拡張
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../exercises/part1-exercises/" class="md-tabs__link">
+          
+  
+  演習問題
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../advanced/optimization/" class="md-tabs__link">
+          
+  
+  発展的なトピック
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../appendix/glossary/" class="md-tabs__link">
+          
+  
+  付録
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Transformerを一から理解する" class="md-nav__button md-logo" aria-label="Transformerを一から理解する" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Transformerを一から理解する
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yourusername/easy-transformer" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    easy-transformer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ホーム
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第1部 導入と基礎概念
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            第1部 導入と基礎概念
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/why-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    なぜTransformerが重要なのか
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/similarities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    プログラミング言語処理との類似点
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/math-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    必要な数学的基礎
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/pytorch-basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    PyTorchの最小限の使い方
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第2部 Transformerへの道のり
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            第2部 Transformerへの道のり
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/tokenization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    単語の数値表現
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/attention-intuition/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    注意機構の直感的理解
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/positional-encoding/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    位置エンコーディング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/layers-and-deep-learning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    層の概念と深層学習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第3部 Transformerアーキテクチャ詳解
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            第3部 Transformerアーキテクチャ詳解
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/multi-head-attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-Head Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/feed-forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feed Forward Network
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/residual-normalization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    残差接続と層正規化
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/encoder-decoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    エンコーダとデコーダ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    第4部 実装編
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            第4部 実装編
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/minimal-transformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最小限のTransformer実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/component-implementation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    各コンポーネントの実装
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/debugging-visualization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    デバッグとビジュアライゼーション
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/validation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    動作確認
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    第5部 LLMへの拡張
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            第5部 LLMへの拡張
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gpt-architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GPTアーキテクチャ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pretraining-finetuning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    事前学習とファインチューニング
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    トークナイザーの詳細
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    トークナイザーの詳細
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      はじめに：言語の原子
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 トークン化の基礎
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.1 トークン化の基礎">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      なぜトークン化が重要か
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#192-byte-pair-encoding-bpe" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 Byte Pair Encoding (BPE)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#193-wordpiecesentencepiece" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 WordPieceとSentencePiece
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#194" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.4 現代的なトークナイザー
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-techniques/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    推論時の工夫
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    演習問題
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            演習問題
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part1-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第1部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part2-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第2部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part3-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第3部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part4-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第4部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exercises/part5-exercises/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第5部 演習
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    発展的なトピック
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            発展的なトピック
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/optimization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    最適化技術
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/multimodal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    マルチモーダル
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    付録
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            付録
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用語集
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    参考資料
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">トークナイザーの詳細<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">はじめに：言語の原子<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>コンパイラの字句解析器（レキサー）を作ったことを思い出してください。ソースコードを意味のある最小単位（トークン）に分割する作業です。<code>if (x &gt; 10) { return true; }</code> を <code>IF</code>, <code>LPAREN</code>, <code>IDENT(x)</code>, <code>GT</code>, <code>NUMBER(10)</code>, ... に分解します。</p>
+<p>自然言語のトークナイザーも同じ役割を果たしますが、プログラミング言語と違って明確な規則がありません。単語？文字？それとも何か別の単位？この章では、現代のトークナイザーがどのように言語を「原子」に分解し、なぜそれが重要なのかを探ります。</p>
+<h2 id="191">19.1 トークン化の基礎<a class="headerlink" href="#191" title="Permanent link">&para;</a></h2>
+<h3 id="_3">なぜトークン化が重要か<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>```python
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from typing import List, Dict, Tuple, Optional, Set
+from collections import Counter, defaultdict
+import regex as re  # Unicodeサポートが優れている
+import json
+from dataclasses import dataclass
+import heapq
+from tqdm import tqdm</p>
+<p>class TokenizationBasics:
+    """トークン化の基礎概念"""</p>
+<div class="highlight"><pre><span></span><code>def explain_tokenization_challenges(self):
+    &quot;&quot;&quot;トークン化の課題を説明&quot;&quot;&quot;
+    print(&quot;=== トークン化の課題 ===\n&quot;)
+
+    # 様々な言語での例
+    examples = {
+        &quot;英語&quot;: {
+            &quot;text&quot;: &quot;I don&#39;t think it&#39;s working.&quot;,
+            &quot;word_tokens&quot;: [&quot;I&quot;, &quot;don&#39;t&quot;, &quot;think&quot;, &quot;it&#39;s&quot;, &quot;working&quot;, &quot;.&quot;],
+            &quot;char_tokens&quot;: list(&quot;I don&#39;t think it&#39;s working.&quot;),
+            &quot;challenges&quot;: &quot;縮約形（don&#39;t, it&#39;s）の扱い&quot;
+        },
+
+        &quot;日本語&quot;: {
+            &quot;text&quot;: &quot;私は猫が好きです。&quot;,
+            &quot;word_tokens&quot;: [&quot;私&quot;, &quot;は&quot;, &quot;猫&quot;, &quot;が&quot;, &quot;好き&quot;, &quot;です&quot;, &quot;。&quot;],
+            &quot;char_tokens&quot;: list(&quot;私は猫が好きです。&quot;),
+            &quot;challenges&quot;: &quot;単語境界が不明確&quot;
+        },
+
+        &quot;ドイツ語&quot;: {
+            &quot;text&quot;: &quot;Donaudampfschifffahrtsgesellschaft&quot;,
+            &quot;word_tokens&quot;: [&quot;Donaudampfschifffahrtsgesellschaft&quot;],
+            &quot;char_tokens&quot;: list(&quot;Donaudampfschifffahrtsgesellschaft&quot;),
+            &quot;challenges&quot;: &quot;複合語が非常に長い&quot;
+        },
+
+        &quot;中国語&quot;: {
+            &quot;text&quot;: &quot;我喜欢吃苹果&quot;,
+            &quot;word_tokens&quot;: [&quot;我&quot;, &quot;喜欢&quot;, &quot;吃&quot;, &quot;苹果&quot;],
+            &quot;char_tokens&quot;: list(&quot;我喜欢吃苹果&quot;),
+            &quot;challenges&quot;: &quot;スペースがない&quot;
+        }
+    }
+
+    for lang, info in examples.items():
+        print(f&quot;{lang}:&quot;)
+        print(f&quot;  テキスト: {info[&#39;text&#39;]}&quot;)
+        print(f&quot;  単語トークン: {info[&#39;word_tokens&#39;][:5]}...&quot;)
+        print(f&quot;  文字トークン: {info[&#39;char_tokens&#39;][:10]}...&quot;)
+        print(f&quot;  課題: {info[&#39;challenges&#39;]}\n&quot;)
+
+    # トークン化手法の比較
+    self._compare_tokenization_methods()
+
+def _compare_tokenization_methods(self):
+    &quot;&quot;&quot;トークン化手法の比較&quot;&quot;&quot;
+    print(&quot;=== トークン化手法の比較 ===\n&quot;)
+
+    methods = {
+        &quot;Word-level&quot;: {
+            &quot;vocab_size&quot;: &quot;50,000-200,000&quot;,
+            &quot;OOV_handling&quot;: &quot;Poor&quot;,
+            &quot;morphology&quot;: &quot;No&quot;,
+            &quot;efficiency&quot;: &quot;Low&quot;
+        },
+        &quot;Character-level&quot;: {
+            &quot;vocab_size&quot;: &quot;100-1,000&quot;,
+            &quot;OOV_handling&quot;: &quot;Perfect&quot;,
+            &quot;morphology&quot;: &quot;Implicit&quot;,
+            &quot;efficiency&quot;: &quot;Very Low&quot;
+        },
+        &quot;Subword (BPE/WordPiece)&quot;: {
+            &quot;vocab_size&quot;: &quot;10,000-100,000&quot;,
+            &quot;OOV_handling&quot;: &quot;Good&quot;,
+            &quot;morphology&quot;: &quot;Partial&quot;,
+            &quot;efficiency&quot;: &quot;High&quot;
+        },
+        &quot;SentencePiece&quot;: {
+            &quot;vocab_size&quot;: &quot;10,000-100,000&quot;,
+            &quot;OOV_handling&quot;: &quot;Good&quot;,
+            &quot;morphology&quot;: &quot;Partial&quot;,
+            &quot;efficiency&quot;: &quot;High&quot;
+        }
+    }
+
+    # 表形式で表示
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.axis(&#39;tight&#39;)
+    ax.axis(&#39;off&#39;)
+
+    # ヘッダー
+    headers = [&quot;Method&quot;, &quot;Vocab Size&quot;, &quot;OOV Handling&quot;, &quot;Morphology&quot;, &quot;Efficiency&quot;]
+    cell_data = []
+
+    for method, props in methods.items():
+        row = [method] + list(props.values())
+        cell_data.append(row)
+
+    # テーブル作成
+    table = ax.table(cellText=cell_data, colLabels=headers,
+                    cellLoc=&#39;center&#39;, loc=&#39;center&#39;,
+                    colWidths=[0.25, 0.2, 0.15, 0.15, 0.15])
+
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 2)
+
+    # スタイリング
+    for i in range(len(headers)):
+        table[(0, i)].set_facecolor(&#39;#4CAF50&#39;)
+        table[(0, i)].set_text_props(weight=&#39;bold&#39;, color=&#39;white&#39;)
+
+    # 色分け
+    colors = [&#39;#ffebee&#39;, &#39;#e8f5e9&#39;, &#39;#fff3e0&#39;, &#39;#e3f2fd&#39;]
+    for i, color in enumerate(colors):
+        for j in range(len(headers)):
+            table[(i+1, j)].set_facecolor(color)
+
+    plt.title(&#39;Comparison of Tokenization Methods&#39;, fontsize=14, weight=&#39;bold&#39;, pad=20)
+    plt.show()
+</code></pre></div>
+<h2 id="192-byte-pair-encoding-bpe">19.2 Byte Pair Encoding (BPE)<a class="headerlink" href="#192-byte-pair-encoding-bpe" title="Permanent link">&para;</a></h2>
+<p>class BytePairEncoding:
+    """BPEトークナイザーの実装"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.vocab = {}
+    self.merges = []
+
+def train(self, texts: List[str], vocab_size: int = 1000):
+    &quot;&quot;&quot;BPEの学習&quot;&quot;&quot;
+    print(&quot;=== BPE学習プロセス ===\n&quot;)
+
+    # 初期語彙（文字レベル）
+    word_freqs = defaultdict(int)
+    for text in texts:
+        words = text.split()
+        for word in words:
+            word_freqs[&#39; &#39;.join(list(word) + [&#39;&lt;/w&gt;&#39;])] += 1
+
+    # 初期語彙を作成
+    self.vocab = {}
+    for word, freq in word_freqs.items():
+        for char in word.split():
+            if char not in self.vocab:
+                self.vocab[char] = len(self.vocab)
+
+    print(f&quot;初期語彙サイズ: {len(self.vocab)}&quot;)
+    print(f&quot;初期語彙例: {list(self.vocab.keys())[:10]}\n&quot;)
+
+    # マージ操作
+    num_merges = vocab_size - len(self.vocab)
+
+    for i in tqdm(range(num_merges), desc=&quot;Learning merges&quot;):
+        # ペアの頻度を計算
+        pair_freqs = self._get_pair_frequencies(word_freqs)
+
+        if not pair_freqs:
+            break
+
+        # 最頻出ペアを選択
+        best_pair = max(pair_freqs, key=pair_freqs.get)
+        self.merges.append(best_pair)
+
+        # 語彙を更新
+        new_token = &#39;&#39;.join(best_pair)
+        self.vocab[new_token] = len(self.vocab)
+
+        # コーパスを更新
+        word_freqs = self._merge_pair(word_freqs, best_pair)
+
+        # 進捗表示
+        if (i + 1) % 100 == 0:
+            print(f&quot;マージ {i+1}: {best_pair} → {new_token}&quot;)
+
+    print(f&quot;\n最終語彙サイズ: {len(self.vocab)}&quot;)
+
+    # 学習結果の可視化
+    self._visualize_vocabulary()
+
+def _get_pair_frequencies(self, word_freqs: Dict[str, int]) -&gt; Dict[Tuple[str, str], int]:
+    &quot;&quot;&quot;ペアの頻度を計算&quot;&quot;&quot;
+    pair_freqs = defaultdict(int)
+
+    for word, freq in word_freqs.items():
+        symbols = word.split()
+        for i in range(len(symbols) - 1):
+            pair_freqs[(symbols[i], symbols[i + 1])] += freq
+
+    return pair_freqs
+
+def _merge_pair(self, word_freqs: Dict[str, int], 
+                pair: Tuple[str, str]) -&gt; Dict[str, int]:
+    &quot;&quot;&quot;ペアをマージ&quot;&quot;&quot;
+    new_word_freqs = {}
+    bigram = &#39; &#39;.join(pair)
+    replacement = &#39;&#39;.join(pair)
+
+    for word, freq in word_freqs.items():
+        new_word = word.replace(bigram, replacement)
+        new_word_freqs[new_word] = freq
+
+    return new_word_freqs
+
+def encode(self, text: str) -&gt; List[int]:
+    &quot;&quot;&quot;テキストをエンコード&quot;&quot;&quot;
+    words = text.split()
+    tokens = []
+
+    for word in words:
+        # 単語を文字に分割
+        word_tokens = list(word) + [&#39;&lt;/w&gt;&#39;]
+
+        # マージを適用
+        for merge in self.merges:
+            i = 0
+            while i &lt; len(word_tokens) - 1:
+                if (word_tokens[i], word_tokens[i + 1]) == merge:
+                    word_tokens = word_tokens[:i] + [&#39;&#39;.join(merge)] + word_tokens[i + 2:]
+                else:
+                    i += 1
+
+        # トークンIDに変換
+        for token in word_tokens:
+            if token in self.vocab:
+                tokens.append(self.vocab[token])
+            else:
+                # Unknown token
+                tokens.append(self.vocab.get(&#39;&lt;unk&gt;&#39;, 0))
+
+    return tokens
+
+def decode(self, token_ids: List[int]) -&gt; str:
+    &quot;&quot;&quot;トークンIDをデコード&quot;&quot;&quot;
+    # 逆引き辞書
+    id_to_token = {v: k for k, v in self.vocab.items()}
+
+    tokens = [id_to_token.get(id, &#39;&lt;unk&gt;&#39;) for id in token_ids]
+    text = &#39; &#39;.join(tokens).replace(&#39;&lt;/w&gt; &#39;, &#39; &#39;).replace(&#39;&lt;/w&gt;&#39;, &#39;&#39;)
+
+    return text
+
+def _visualize_vocabulary(self):
+    &quot;&quot;&quot;語彙の可視化&quot;&quot;&quot;
+    # トークン長の分布
+    token_lengths = [len(token.replace(&#39;&lt;/w&gt;&#39;, &#39;&#39;)) for token in self.vocab.keys()]
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(token_lengths, bins=range(1, max(token_lengths) + 2), 
+            alpha=0.7, edgecolor=&#39;black&#39;)
+    plt.xlabel(&#39;Token Length (characters)&#39;)
+    plt.ylabel(&#39;Count&#39;)
+    plt.title(&#39;Distribution of Token Lengths in BPE Vocabulary&#39;)
+    plt.grid(True, alpha=0.3)
+
+    # 統計情報
+    avg_length = np.mean(token_lengths)
+    plt.axvline(avg_length, color=&#39;red&#39;, linestyle=&#39;--&#39;, 
+               label=f&#39;Average: {avg_length:.2f}&#39;)
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<p>class BPEDemo:
+    """BPEのデモンストレーション"""</p>
+<div class="highlight"><pre><span></span><code>def demonstrate_bpe_process(self):
+    &quot;&quot;&quot;BPEプロセスのデモ&quot;&quot;&quot;
+    print(&quot;=== BPEプロセスの可視化 ===\n&quot;)
+
+    # サンプルテキスト
+    corpus = [
+        &quot;the cat sat on the mat&quot;,
+        &quot;the dog sat on the log&quot;,
+        &quot;cats and dogs are pets&quot;
+    ]
+
+    # 初期状態
+    words = []
+    for text in corpus:
+        words.extend(text.split())
+
+    # 単語を文字に分割
+    word_splits = {}
+    for word in set(words):
+        word_splits[word] = list(word) + [&#39;&lt;/w&gt;&#39;]
+
+    print(&quot;初期状態（文字分割）:&quot;)
+    for word, splits in list(word_splits.items())[:5]:
+        print(f&quot;  {word}: {&#39; &#39;.join(splits)}&quot;)
+
+    # マージプロセスのシミュレーション
+    merges = [
+        (&#39;t&#39;, &#39;h&#39;),      # th
+        (&#39;th&#39;, &#39;e&#39;),     # the
+        (&#39;a&#39;, &#39;t&#39;),      # at
+        (&#39;s&#39;, &#39;at&#39;),     # sat
+        (&#39;o&#39;, &#39;n&#39;),      # on
+    ]
+
+    print(&quot;\n\nマージプロセス:&quot;)
+    current_splits = word_splits.copy()
+
+    for i, (a, b) in enumerate(merges):
+        print(f&quot;\nステップ {i+1}: &#39;{a}&#39; + &#39;{b}&#39; → &#39;{a+b}&#39;&quot;)
+
+        # マージを適用
+        for word, splits in current_splits.items():
+            new_splits = []
+            j = 0
+            while j &lt; len(splits):
+                if j &lt; len(splits) - 1 and splits[j] == a and splits[j+1] == b:
+                    new_splits.append(a + b)
+                    j += 2
+                else:
+                    new_splits.append(splits[j])
+                    j += 1
+            current_splits[word] = new_splits
+
+        # 変更された単語を表示
+        for word, splits in list(current_splits.items())[:3]:
+            print(f&quot;    {word}: {&#39; &#39;.join(splits)}&quot;)
+
+    # 最終的なトークン化
+    self._visualize_tokenization_result(current_splits)
+
+def _visualize_tokenization_result(self, word_splits: Dict[str, List[str]]):
+    &quot;&quot;&quot;トークン化結果の可視化&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # サンプル文
+    sentence = &quot;the cat sat on the mat&quot;
+    words = sentence.split()
+
+    y_pos = 0.5
+    x_pos = 0
+
+    colors = plt.cm.Set3(np.linspace(0, 1, 20))
+    color_idx = 0
+
+    for word in words:
+        tokens = word_splits.get(word, list(word) + [&#39;&lt;/w&gt;&#39;])
+
+        for token in tokens:
+            if token == &#39;&lt;/w&gt;&#39;:
+                # 単語境界マーカー
+                width = 0.3
+                rect = plt.Rectangle((x_pos, y_pos), width, 0.3,
+                                   facecolor=&#39;lightgray&#39;, 
+                                   edgecolor=&#39;black&#39;, linewidth=1)
+                ax.add_patch(rect)
+                ax.text(x_pos + width/2, y_pos + 0.15, &#39;&lt;/w&gt;&#39;,
+                       ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=8)
+            else:
+                # 通常のトークン
+                width = len(token) * 0.15
+                rect = plt.Rectangle((x_pos, y_pos), width, 0.3,
+                                   facecolor=colors[color_idx % len(colors)],
+                                   edgecolor=&#39;black&#39;, linewidth=1)
+                ax.add_patch(rect)
+                ax.text(x_pos + width/2, y_pos + 0.15, token,
+                       ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=10)
+                color_idx += 1
+
+            x_pos += width + 0.05
+
+        x_pos += 0.2  # 単語間のスペース
+
+    ax.set_xlim(-0.1, x_pos)
+    ax.set_ylim(0, 1)
+    ax.axis(&#39;off&#39;)
+    ax.set_title(&#39;BPE Tokenization Result&#39;, fontsize=14, weight=&#39;bold&#39;)
+
+    # 元の文を表示
+    ax.text(x_pos/2, 0.9, f&#39;Original: &quot;{sentence}&quot;&#39;, 
+           ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=12, style=&#39;italic&#39;)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<h2 id="193-wordpiecesentencepiece">19.3 WordPieceとSentencePiece<a class="headerlink" href="#193-wordpiecesentencepiece" title="Permanent link">&para;</a></h2>
+<p>class WordPieceTokenizer:
+    """WordPieceトークナイザーの実装"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self):
+    self.vocab = {}
+    self.unk_token = &#39;[UNK]&#39;
+    self.max_input_chars_per_word = 100
+
+def train(self, texts: List[str], vocab_size: int = 1000):
+    &quot;&quot;&quot;WordPieceの学習（簡略版）&quot;&quot;&quot;
+    print(&quot;=== WordPiece学習 ===\n&quot;)
+
+    # 初期語彙の構築
+    char_counts = Counter()
+    word_counts = Counter()
+
+    for text in texts:
+        words = text.lower().split()
+        for word in words:
+            word_counts[word] += 1
+            for char in word:
+                char_counts[char] += 1
+
+    # 基本語彙
+    self.vocab = {
+        &#39;[PAD]&#39;: 0,
+        &#39;[UNK]&#39;: 1,
+        &#39;[CLS]&#39;: 2,
+        &#39;[SEP]&#39;: 3,
+        &#39;[MASK]&#39;: 4
+    }
+
+    # 文字を追加
+    for char, count in char_counts.most_common():
+        if len(self.vocab) &lt; 100:  # 最初の100は文字用
+            self.vocab[char] = len(self.vocab)
+
+    # WordPieceの追加
+    print(f&quot;初期語彙サイズ: {len(self.vocab)}&quot;)
+
+    # サブワード候補の生成と評価
+    while len(self.vocab) &lt; vocab_size:
+        # 候補を生成
+        candidates = self._generate_candidates(word_counts)
+
+        if not candidates:
+            break
+
+        # スコアを計算（簡略版）
+        best_candidate = max(candidates, 
+                           key=lambda x: self._score_candidate(x, word_counts))
+
+        # 語彙に追加
+        if best_candidate.startswith(&#39;##&#39;):
+            self.vocab[best_candidate] = len(self.vocab)
+        else:
+            self.vocab[&#39;##&#39; + best_candidate] = len(self.vocab)
+
+        # 進捗
+        if len(self.vocab) % 100 == 0:
+            print(f&quot;語彙サイズ: {len(self.vocab)}&quot;)
+
+    print(f&quot;\n最終語彙サイズ: {len(self.vocab)}&quot;)
+
+    # WordPieceの特徴を可視化
+    self._visualize_wordpiece_features()
+
+def _generate_candidates(self, word_counts: Counter) -&gt; List[str]:
+    &quot;&quot;&quot;サブワード候補を生成&quot;&quot;&quot;
+    candidates = set()
+
+    for word in word_counts:
+        for i in range(len(word)):
+            for j in range(i + 1, min(i + 10, len(word) + 1)):
+                subword = word[i:j]
+                if len(subword) &gt; 1:
+                    candidates.add(subword)
+
+    return list(candidates)
+
+def _score_candidate(self, candidate: str, word_counts: Counter) -&gt; float:
+    &quot;&quot;&quot;候補のスコアを計算&quot;&quot;&quot;
+    score = 0
+    for word, count in word_counts.items():
+        if candidate in word:
+            score += count
+    return score
+
+def tokenize(self, text: str) -&gt; List[str]:
+    &quot;&quot;&quot;テキストをトークン化&quot;&quot;&quot;
+    output_tokens = []
+
+    for word in text.lower().split():
+        if len(word) &gt; self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        is_bad = False
+        sub_tokens = []
+        start = 0
+
+        while start &lt; len(word):
+            end = len(word)
+            cur_substr = None
+
+            while start &lt; end:
+                substr = word[start:end]
+                if start &gt; 0:
+                    substr = &#39;##&#39; + substr
+
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+
+                end -= 1
+
+            if cur_substr is None:
+                is_bad = True
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+
+        if is_bad:
+            output_tokens.append(self.unk_token)
+        else:
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens
+
+def _visualize_wordpiece_features(self):
+    &quot;&quot;&quot;WordPieceの特徴を可視化&quot;&quot;&quot;
+    # ##プレフィックスの統計
+    prefix_tokens = [token for token in self.vocab.keys() 
+                    if token.startswith(&#39;##&#39;)]
+
+    print(f&quot;\n##プレフィックス付きトークン: {len(prefix_tokens)}&quot;)
+    print(f&quot;例: {prefix_tokens[:10]}&quot;)
+
+    # トークン化の例
+    examples = [
+        &quot;playing&quot;,
+        &quot;unbelievable&quot;,
+        &quot;internationalization&quot;
+    ]
+
+    print(&quot;\n\nトークン化の例:&quot;)
+    for word in examples:
+        tokens = self.tokenize(word)
+        print(f&quot;  {word} → {tokens}&quot;)
+</code></pre></div>
+<p>class SentencePieceDemo:
+    """SentencePieceのデモ"""</p>
+<div class="highlight"><pre><span></span><code>def explain_sentencepiece(self):
+    &quot;&quot;&quot;SentencePieceの説明&quot;&quot;&quot;
+    print(&quot;=== SentencePiece ===\n&quot;)
+
+    print(&quot;特徴:&quot;)
+    print(&quot;1. 言語独立:&quot;)
+    print(&quot;   - 前処理不要（トークン化なし）&quot;)
+    print(&quot;   - 生のテキストから直接学習&quot;)
+    print(&quot;   - スペースも通常の文字として扱う\n&quot;)
+
+    print(&quot;2. 可逆的:&quot;)
+    print(&quot;   - デトークン化で元のテキストを完全復元&quot;)
+    print(&quot;   - 情報の損失なし\n&quot;)
+
+    print(&quot;3. サブワードの正規化:&quot;)
+    print(&quot;   - 確率的サンプリング&quot;)
+    print(&quot;   - 複数の分割候補から選択\n&quot;)
+
+    # アルゴリズムの比較
+    self._compare_subword_algorithms()
+
+def _compare_subword_algorithms(self):
+    &quot;&quot;&quot;サブワードアルゴリズムの比較&quot;&quot;&quot;
+    fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+
+    # BPE
+    ax = axes[0]
+    ax.set_title(&#39;BPE&#39;, fontsize=12, weight=&#39;bold&#39;)
+
+    # BPEのマージプロセス
+    bpe_steps = [
+        &quot;c a t s &lt;/w&gt;&quot;,
+        &quot;ca t s &lt;/w&gt;&quot;,
+        &quot;ca ts &lt;/w&gt;&quot;,
+        &quot;cats &lt;/w&gt;&quot;
+    ]
+
+    for i, step in enumerate(bpe_steps):
+        y = 0.8 - i * 0.2
+        ax.text(0.5, y, step, ha=&#39;center&#39;, va=&#39;center&#39;,
+               fontsize=10, family=&#39;monospace&#39;,
+               bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, 
+                       facecolor=&#39;lightblue&#39;, alpha=0.7))
+
+        if i &lt; len(bpe_steps) - 1:
+            ax.arrow(0.5, y - 0.05, 0, -0.1, 
+                    head_width=0.05, head_length=0.02,
+                    fc=&#39;black&#39;, ec=&#39;black&#39;)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis(&#39;off&#39;)
+    ax.text(0.5, 0.95, &#39;Bottom-up Merging&#39;, ha=&#39;center&#39;, 
+           fontsize=10, style=&#39;italic&#39;)
+
+    # WordPiece
+    ax = axes[1]
+    ax.set_title(&#39;WordPiece&#39;, fontsize=12, weight=&#39;bold&#39;)
+
+    # WordPieceの分割
+    word = &quot;playing&quot;
+    tokens = [&quot;play&quot;, &quot;##ing&quot;]
+
+    # 単語全体
+    rect = plt.Rectangle((0.2, 0.5), 0.6, 0.2,
+                       facecolor=&#39;lightgreen&#39;, edgecolor=&#39;black&#39;)
+    ax.add_patch(rect)
+    ax.text(0.5, 0.6, word, ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=12)
+
+    # 分割後
+    x_pos = 0.2
+    for token in tokens:
+        width = 0.25
+        rect = plt.Rectangle((x_pos, 0.2), width, 0.15,
+                           facecolor=&#39;lightyellow&#39;, edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        ax.text(x_pos + width/2, 0.275, token, 
+               ha=&#39;center&#39;, va=&#39;center&#39;, fontsize=10)
+        x_pos += width + 0.1
+
+    # 矢印
+    ax.arrow(0.5, 0.48, 0, -0.1, head_width=0.05, head_length=0.02,
+            fc=&#39;black&#39;, ec=&#39;black&#39;)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis(&#39;off&#39;)
+    ax.text(0.5, 0.95, &#39;Likelihood Maximization&#39;, ha=&#39;center&#39;,
+           fontsize=10, style=&#39;italic&#39;)
+
+    # SentencePiece
+    ax = axes[2]
+    ax.set_title(&#39;SentencePiece&#39;, fontsize=12, weight=&#39;bold&#39;)
+
+    # 生テキスト
+    text = &quot;▁the▁cat&quot;
+    ax.text(0.5, 0.7, text, ha=&#39;center&#39;, va=&#39;center&#39;,
+           fontsize=12, family=&#39;monospace&#39;,
+           bbox=dict(boxstyle=&quot;round,pad=0.3&quot;, 
+                   facecolor=&#39;lightcoral&#39;, alpha=0.7))
+
+    # 複数の分割候補
+    candidates = [
+        [&quot;▁the&quot;, &quot;▁cat&quot;],
+        [&quot;▁th&quot;, &quot;e&quot;, &quot;▁cat&quot;],
+        [&quot;▁the&quot;, &quot;▁c&quot;, &quot;at&quot;]
+    ]
+
+    y_start = 0.4
+    for i, cand in enumerate(candidates):
+        y = y_start - i * 0.15
+        text = &#39; &#39;.join(cand)
+        ax.text(0.5, y, text, ha=&#39;center&#39;, va=&#39;center&#39;,
+               fontsize=9, family=&#39;monospace&#39;,
+               bbox=dict(boxstyle=&quot;round,pad=0.2&quot;,
+                       facecolor=&#39;lightyellow&#39;, alpha=0.5))
+
+    ax.text(0.8, 0.25, &#39;Sample&#39;, ha=&#39;center&#39;, fontsize=8,
+           style=&#39;italic&#39;, color=&#39;red&#39;)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis(&#39;off&#39;)
+    ax.text(0.5, 0.95, &#39;Unigram LM / BPE&#39;, ha=&#39;center&#39;,
+           fontsize=10, style=&#39;italic&#39;)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<h2 id="194">19.4 現代的なトークナイザー<a class="headerlink" href="#194" title="Permanent link">&para;</a></h2>
+<p>class ModernTokenizers:
+    """現代的なトークナイザーの実装と比較"""</p>
+<div class="highlight"><pre><span></span><code>def compare_modern_tokenizers(self):
+    &quot;&quot;&quot;現代的トークナイザーの比較&quot;&quot;&quot;
+    print(&quot;=== 現代的なトークナイザー ===\n&quot;)
+
+    tokenizers = {
+        &quot;GPT-2/GPT-3&quot;: {
+            &quot;type&quot;: &quot;BPE&quot;,
+            &quot;vocab_size&quot;: &quot;50,257&quot;,
+            &quot;special&quot;: &quot;Byte-level BPE&quot;,
+            &quot;features&quot;: &quot;スペース処理の改善&quot;
+        },
+
+        &quot;BERT&quot;: {
+            &quot;type&quot;: &quot;WordPiece&quot;,
+            &quot;vocab_size&quot;: &quot;30,522&quot;,
+            &quot;special&quot;: &quot;##プレフィックス&quot;,
+            &quot;features&quot;: &quot;事前トークン化必要&quot;
+        },
+
+        &quot;T5/mT5&quot;: {
+            &quot;type&quot;: &quot;SentencePiece&quot;,
+            &quot;vocab_size&quot;: &quot;32,000&quot;,
+            &quot;special&quot;: &quot;▁(スペースマーカー)&quot;,
+            &quot;features&quot;: &quot;言語独立&quot;
+        },
+
+        &quot;LLaMA&quot;: {
+            &quot;type&quot;: &quot;SentencePiece (BPE)&quot;,
+            &quot;vocab_size&quot;: &quot;32,000&quot;,
+            &quot;special&quot;: &quot;Byte fallback&quot;,
+            &quot;features&quot;: &quot;未知文字の処理&quot;
+        },
+
+        &quot;ChatGPT&quot;: {
+            &quot;type&quot;: &quot;cl100k_base (tiktoken)&quot;,
+            &quot;vocab_size&quot;: &quot;100,277&quot;,
+            &quot;special&quot;: &quot;改良されたBPE&quot;,
+            &quot;features&quot;: &quot;効率的なエンコーディング&quot;
+        }
+    }
+
+    # 比較表示
+    self._visualize_tokenizer_comparison(tokenizers)
+
+    # エンコーディング効率の比較
+    self._compare_encoding_efficiency()
+
+def _visualize_tokenizer_comparison(self, tokenizers: Dict[str, Dict[str, str]]):
+    &quot;&quot;&quot;トークナイザーの比較を可視化&quot;&quot;&quot;
+    # 語彙サイズの比較
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    # 語彙サイズ
+    names = list(tokenizers.keys())
+    vocab_sizes = []
+    for name, info in tokenizers.items():
+        size_str = info[&quot;vocab_size&quot;].replace(&quot;,&quot;, &quot;&quot;)
+        vocab_sizes.append(int(size_str))
+
+    colors = plt.cm.viridis(np.linspace(0, 1, len(names)))
+    bars = ax1.bar(names, vocab_sizes, color=colors)
+
+    # 値を表示
+    for bar, size in zip(bars, vocab_sizes):
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width()/2., height,
+                f&#39;{size:,}&#39;, ha=&#39;center&#39;, va=&#39;bottom&#39;)
+
+    ax1.set_ylabel(&#39;Vocabulary Size&#39;)
+    ax1.set_title(&#39;Vocabulary Sizes of Modern Tokenizers&#39;)
+    ax1.tick_params(axis=&#39;x&#39;, rotation=45)
+
+    # タイプ別分類
+    type_counts = Counter(info[&quot;type&quot;].split()[0] for info in tokenizers.values())
+
+    ax2.pie(type_counts.values(), labels=type_counts.keys(),
+           autopct=&#39;%1.1f%%&#39;, startangle=90)
+    ax2.set_title(&#39;Distribution of Tokenizer Types&#39;)
+
+    plt.tight_layout()
+    plt.show()
+
+def _compare_encoding_efficiency(self):
+    &quot;&quot;&quot;エンコーディング効率の比較&quot;&quot;&quot;
+    print(&quot;\n=== エンコーディング効率の比較 ===&quot;)
+
+    # サンプルテキスト
+    samples = {
+        &quot;English&quot;: &quot;The quick brown fox jumps over the lazy dog.&quot;,
+        &quot;Code&quot;: &quot;def factorial(n): return 1 if n &lt;= 1 else n * factorial(n-1)&quot;,
+        &quot;Mixed&quot;: &quot;Hello世界! 🌍 This is a test → λx.x+1&quot;,
+        &quot;URL&quot;: &quot;https://github.com/openai/gpt-3/blob/main/model.py&quot;
+    }
+
+    # 仮想的なトークン数（実際の比率に基づく）
+    tokenizer_efficiency = {
+        &quot;GPT-2&quot;: {&quot;English&quot;: 11, &quot;Code&quot;: 24, &quot;Mixed&quot;: 18, &quot;URL&quot;: 35},
+        &quot;BERT&quot;: {&quot;English&quot;: 12, &quot;Code&quot;: 28, &quot;Mixed&quot;: 22, &quot;URL&quot;: 40},
+        &quot;T5&quot;: {&quot;English&quot;: 10, &quot;Code&quot;: 25, &quot;Mixed&quot;: 16, &quot;URL&quot;: 38},
+        &quot;ChatGPT&quot;: {&quot;English&quot;: 9, &quot;Code&quot;: 20, &quot;Mixed&quot;: 14, &quot;URL&quot;: 25}
+    }
+
+    # ヒートマップで表示
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    tokenizers = list(tokenizer_efficiency.keys())
+    text_types = list(samples.keys())
+
+    efficiency_matrix = np.array([
+        [tokenizer_efficiency[tok][txt] for txt in text_types]
+        for tok in tokenizers
+    ])
+
+    im = ax.imshow(efficiency_matrix, cmap=&#39;RdYlGn_r&#39;, aspect=&#39;auto&#39;)
+
+    # ラベル
+    ax.set_xticks(np.arange(len(text_types)))
+    ax.set_yticks(np.arange(len(tokenizers)))
+    ax.set_xticklabels(text_types)
+    ax.set_yticklabels(tokenizers)
+
+    # 値を表示
+    for i in range(len(tokenizers)):
+        for j in range(len(text_types)):
+            text = ax.text(j, i, efficiency_matrix[i, j],
+                         ha=&quot;center&quot;, va=&quot;center&quot;, color=&quot;black&quot;)
+
+    ax.set_title(&#39;Token Count Comparison (Lower is Better)&#39;)
+    plt.colorbar(im, ax=ax, label=&#39;Number of Tokens&#39;)
+
+    plt.tight_layout()
+    plt.show()
+</code></pre></div>
+<p>class TokenizerImplementationTips:
+    """トークナイザー実装のヒント"""</p>
+<div class="highlight"><pre><span></span><code>def share_best_practices(self):
+    &quot;&quot;&quot;ベストプラクティスの共有&quot;&quot;&quot;
+    print(&quot;=== トークナイザー実装のベストプラクティス ===\n&quot;)
+
+    practices = {
+        &quot;1. 前処理&quot;: [
+            &quot;Unicode正規化（NFKC）&quot;,
+            &quot;空白文字の統一&quot;,
+            &quot;特殊文字のエスケープ&quot;,
+            &quot;大文字小文字の扱いを決定&quot;
+        ],
+
+        &quot;2. 特殊トークン&quot;: [
+            &quot;[PAD], [UNK], [CLS], [SEP]の追加&quot;,
+            &quot;タスク固有トークンの設計&quot;,
+            &quot;予約領域の確保&quot;,
+            &quot;トークンIDの固定化&quot;
+        ],
+
+        &quot;3. 効率化&quot;: [
+            &quot;トライ木での高速検索&quot;,
+            &quot;キャッシュの活用&quot;,
+            &quot;バッチ処理の実装&quot;,
+            &quot;並列化可能な設計&quot;
+        ],
+
+        &quot;4. 堅牢性&quot;: [
+            &quot;未知文字の適切な処理&quot;,
+            &quot;最大長の制限&quot;,
+            &quot;エラーハンドリング&quot;,
+            &quot;デバッグ情報の出力&quot;
+        ]
+    }
+
+    for category, items in practices.items():
+        print(f&quot;{category}:&quot;)
+        for item in items:
+            print(f&quot;  • {item}&quot;)
+        print()
+
+    # 実装例
+    self._show_implementation_example()
+
+def _show_implementation_example(self):
+    &quot;&quot;&quot;実装例を表示&quot;&quot;&quot;
+    print(&quot;\n=== 効率的なトークナイザーの実装例 ===\n&quot;)
+
+    code = &#39;&#39;&#39;
+</code></pre></div>
+<p>class EfficientTokenizer:
+    """効率的なトークナイザーの実装"""</p>
+<div class="highlight"><pre><span></span><code>def __init__(self, vocab: Dict[str, int]):
+    self.vocab = vocab
+    self.trie = self._build_trie(vocab)
+    self.cache = {}
+
+def _build_trie(self, vocab: Dict[str, int]) -&gt; Dict:
+    &quot;&quot;&quot;トライ木の構築&quot;&quot;&quot;
+    trie = {}
+    for token, token_id in vocab.items():
+        node = trie
+        for char in token:
+            if char not in node:
+                node[char] = {}
+            node = node[char]
+        node[&#39;&lt;END&gt;&#39;] = token_id
+    return trie
+
+def encode(self, text: str) -&gt; List[int]:
+    &quot;&quot;&quot;高速エンコード&quot;&quot;&quot;
+    # キャッシュチェック
+    if text in self.cache:
+        return self.cache[text]
+
+    tokens = []
+    i = 0
+
+    while i &lt; len(text):
+        # 最長一致
+        node = self.trie
+        longest_token_id = None
+        longest_end = i
+
+        for j in range(i, len(text)):
+            if text[j] not in node:
+                break
+            node = node[text[j]]
+            if &#39;&lt;END&gt;&#39; in node:
+                longest_token_id = node[&#39;&lt;END&gt;&#39;]
+                longest_end = j + 1
+
+        if longest_token_id is not None:
+            tokens.append(longest_token_id)
+            i = longest_end
+        else:
+            # Unknown token
+            tokens.append(self.vocab.get(&#39;&lt;UNK&gt;&#39;, 0))
+            i += 1
+
+    # キャッシュに保存
+    self.cache[text] = tokens
+    return tokens
+</code></pre></div>
+<p>'''</p>
+<div class="highlight"><pre><span></span><code>    print(code)
+</code></pre></div>
+<h1 id="_4">実行とデモ<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h1>
+<p>def run_tokenizer_demo():
+    """トークナイザーのデモを実行"""
+    print("=" * 70)
+    print("トークナイザーの詳細")
+    print("=" * 70 + "\n")</p>
+<div class="highlight"><pre><span></span><code># 1. 基礎概念
+basics = TokenizationBasics()
+basics.explain_tokenization_challenges()
+
+# 2. BPE
+print(&quot;\n&quot;)
+bpe = BytePairEncoding()
+
+# サンプルコーパスでBPEを学習
+sample_corpus = [
+    &quot;the cat sat on the mat&quot;,
+    &quot;the dog sat on the log&quot;, 
+    &quot;cats and dogs are pets&quot;,
+    &quot;the quick brown fox jumps&quot;
+]
+
+bpe.train(sample_corpus, vocab_size=50)
+
+# BPEのデモ
+print(&quot;\n&quot;)
+bpe_demo = BPEDemo()
+bpe_demo.demonstrate_bpe_process()
+
+# 3. WordPiece
+print(&quot;\n&quot;)
+wp = WordPieceTokenizer()
+wp.train(sample_corpus, vocab_size=100)
+
+# 4. SentencePiece
+print(&quot;\n&quot;)
+sp_demo = SentencePieceDemo()
+sp_demo.explain_sentencepiece()
+
+# 5. 現代的なトークナイザー
+print(&quot;\n&quot;)
+modern = ModernTokenizers()
+modern.compare_modern_tokenizers()
+
+# 6. 実装のヒント
+print(&quot;\n&quot;)
+tips = TokenizerImplementationTips()
+tips.share_best_practices()
+
+print(&quot;\n&quot; + &quot;=&quot; * 70)
+print(&quot;まとめ&quot;)
+print(&quot;=&quot; * 70)
+print(&quot;\nトークナイザーの要点:&quot;)
+print(&quot;• 言語の多様性に対応する柔軟性&quot;)
+print(&quot;• 計算効率と表現力のバランス&quot;)
+print(&quot;• サブワード分割による未知語対応&quot;)
+print(&quot;• タスクとモデルに適したトークナイザー選択&quot;)
+print(&quot;\nトークナイザーは言語モデルの「目」であり、&quot;)
+print(&quot;その設計がモデルの性能に大きく影響します。&quot;)
+</code></pre></div>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    run_tokenizer_demo()</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="最終更新日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="作成日">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime">June 24, 2025 01:23:14</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
