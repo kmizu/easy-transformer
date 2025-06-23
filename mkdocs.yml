@@ -1,0 +1,114 @@
+site_name: "かんたんTransformer"
+site_description: "プログラミング言語実装者のためのTransformer解説と実装"
+site_author: "Kota Mizushima"
+site_url: "https://kmizu.github.io/easy-transformer"
+
+repo_name: "easy-transformer"
+repo_url: "https://github.com/kmizu/easy-transformer"
+
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: ダークモードに切り替え
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: ライトモードに切り替え
+
+plugins:
+  - search:
+      lang: ja
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: datetime
+      timezone: Asia/Tokyo
+      fallback_to_build_date: true
+  - mermaid2
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.mark
+  - pymdownx.tilde
+  - admonition
+  - footnotes
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - ホーム: index.md
+  - 第1部 導入と基礎概念:
+    - なぜTransformerが重要なのか: part1/why-transformer.md
+    - プログラミング言語処理との類似点: part1/similarities.md
+    - 必要な数学的基礎: part1/math-basics.md
+    - PyTorchの最小限の使い方: part1/pytorch-basics.md
+  - 第2部 Transformerへの道のり:
+    - 単語の数値表現: part2/tokenization.md
+    - 注意機構の直感的理解: part2/attention-intuition.md
+    - 位置エンコーディング: part2/positional-encoding.md
+    - 層の概念と深層学習: part2/layers-and-deep-learning.md
+  - 第3部 Transformerアーキテクチャ詳解:
+    - Multi-Head Attention: part3/multi-head-attention.md
+    - Feed Forward Network: part3/feed-forward.md
+    - 残差接続と層正規化: part3/residual-normalization.md
+    - エンコーダとデコーダ: part3/encoder-decoder.md
+  - 第4部 実装編:
+    - 最小限のTransformer実装: part4/minimal-transformer.md
+    - 各コンポーネントの実装: part4/component-implementation.md
+    - デバッグとビジュアライゼーション: part4/debugging-visualization.md
+    - 動作確認: part4/validation.md
+  - 第5部 LLMへの拡張:
+    - GPTアーキテクチャ: part5/gpt-architecture.md
+    - 事前学習とファインチューニング: part5/pretraining-finetuning.md
+    - トークナイザーの詳細: part5/tokenizer-details.md
+    - 推論時の工夫: part5/inference-techniques.md
+  - 演習問題:
+    - 第1部 演習: exercises/part1-exercises.md
+    - 第2部 演習: exercises/part2-exercises.md
+    - 第3部 演習: exercises/part3-exercises.md
+    - 第4部 演習: exercises/part4-exercises.md
+    - 第5部 演習: exercises/part5-exercises.md
+  - 発展的なトピック:
+    - 最適化技術: advanced/optimization.md
+    - マルチモーダル: advanced/multimodal.md
+  - 付録:
+    - 用語集: appendix/glossary.md
+    - 参考資料: appendix/resources.md
